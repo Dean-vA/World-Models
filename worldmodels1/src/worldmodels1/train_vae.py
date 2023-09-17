@@ -9,6 +9,7 @@ from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data.distributed import DistributedSampler
 import torch.distributed as dist
 import logging
+import tqdm
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s]: %(message)s')
 
@@ -20,7 +21,7 @@ torch.cuda.set_device(rank)
 logging.info("Parsing arguments")
 parser = argparse.ArgumentParser(description='Train VAE model for Car Racing')
 parser.add_argument('--batch_size', type=int, default=32, help='Batch size')
-parser.add_argument('--epochs', type=int, default=100, help='Number of epochs')
+parser.add_argument('--epochs', type=int, default=10, help='Number of epochs')
 parser.add_argument('--lr', type=float, default=0.001, help='Learning rate')
 parser.add_argument('--data_path', type=str, required=True, help='Path to preprocessed data')
 parser.add_argument('--beta', type=float, default=1.0, help='Weight for KL Divergence term')
@@ -85,26 +86,29 @@ reconstruction_loss = nn.MSELoss(reduction='sum')
 logging.info("Starting training loop")
 best_loss = float('inf')
 for epoch in range(args.epochs):
-    for batch_idx, batch in enumerate(dataloader):
-        logging.info(f'Starting batch {batch_idx}/{len(dataloader)}')
-        states = batch.to(device)
+    # Wrap dataloader with tqdm to create a progress bar
+    with tqdm(total=len(dataloader), desc=f'Epoch {epoch + 1}/{args.epochs}', unit='batch') as pbar:
+        for batch_idx, batch in enumerate(dataloader):
+            states = batch.to(device)
+            
+            # Forward pass
+            recon_states, mu, logvar = vae(states)
+            
+            # Loss computation
+            recon_loss = reconstruction_loss(recon_states, states)
+            kl_div = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+            
+            loss = recon_loss + args.beta * kl_div
+            
+            # Backpropagation
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            
+            # Update progress bar
+            pbar.set_postfix({'Total Loss': loss.item(), 'Recon Loss': recon_loss.item(), 'KL Div': kl_div.item()})
+            pbar.update(1)
         
-        # Forward pass
-        print("Shape of states:", states.shape)
-        recon_states, mu, logvar = vae(states)
-        
-        # Loss computation
-        recon_loss = reconstruction_loss(recon_states, states)
-        kl_div = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-        
-        loss = recon_loss + args.beta * kl_div
-        
-        # Backpropagation
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-        logging.info(f'Completed batch {batch_idx} with loss {loss.item()}, Reconstruction Loss: {recon_loss.item()}, KL Divergence: {kl_div.item()}')
-
     logging.info(f'Epoch [{epoch + 1}/{args.epochs}], Total Loss: {loss.item()}, Reconstruction Loss: {recon_loss.item()}, KL Divergence: {kl_div.item()}')
     #track best loss  
     if loss.item() < best_loss:
@@ -112,4 +116,5 @@ for epoch in range(args.epochs):
         #save model 
         torch.save(vae.state_dict(), 'vae.pth')
         logging.info('Model saved')
+
 
