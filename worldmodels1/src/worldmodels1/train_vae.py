@@ -85,6 +85,7 @@ for epoch in range(args.epochs):
         states = batch.to(device)
         
         # Forward pass
+        print("Shape of states:", states.shape)
         recon_states, mu, logvar = vae(states)
         
         # Loss computation
