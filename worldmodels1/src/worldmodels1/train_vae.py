@@ -47,6 +47,8 @@ class CarRacingDataset(Dataset):
     def __getitem__(self, index):
         x = self.data[index]
         x = torch.from_numpy(x).float() / 255.0  # Convert to float and normalize
+        #unsqueeze to add a dimension of size one at the specified position
+        x = x.unsqueeze(1)  # Add channel dimension [batch, channel, height, width]
         return x
 
 dataset = CarRacingDataset(preprocessed_data)
