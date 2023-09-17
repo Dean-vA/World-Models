@@ -2,25 +2,24 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-class VAE(nn.Module):
+class SymmetricVAE(nn.Module):
     def __init__(self):
-        super(VAE, self).__init__()
+        super(SymmetricVAE, self).__init__()
 
         # Encoder
         self.enc_conv1 = nn.Conv2d(1, 32, kernel_size=4, stride=2, padding=1)  # Output size: 32x32x32
         self.enc_conv2 = nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1) # Output size: 16x16x64
-        self.enc_conv3 = nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1) # Output size: 8x
-        self.enc_fc1 = nn.Linear(128 * 8 * 8, 256)
+        self.enc_conv3 = nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1) # Output size: 8x8x128
+        self.enc_fc1 = nn.Linear(8 * 8 * 128, 256)
         self.enc_fc2_mean = nn.Linear(256, 32)
         self.enc_fc2_logvar = nn.Linear(256, 32)
 
         # Decoder
         self.dec_fc1 = nn.Linear(32, 256)
-        self.dec_fc2 = nn.Linear(256, 128 * 8 * 8)
+        self.dec_fc2 = nn.Linear(256, 8 * 8 * 128)
         self.dec_conv3 = nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1) # Output size: 16x16x64
         self.dec_conv2 = nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1) # Output size: 32x32x32
         self.dec_conv1 = nn.ConvTranspose2d(32, 1, kernel_size=4, stride=2, padding=1)  # Output size: 64x64x1
-
 
     def encode(self, x):
         x = torch.relu(self.enc_conv1(x))
@@ -34,9 +33,9 @@ class VAE(nn.Module):
         z = torch.relu(self.dec_fc1(z))
         z = torch.relu(self.dec_fc2(z))
         z = z.view(z.size(0), 128, 8, 8)
-        z = torch.relu(self.dec_conv1(z))
+        z = torch.relu(self.dec_conv3(z))
         z = torch.relu(self.dec_conv2(z))
-        z = torch.sigmoid(self.dec_conv3(z))
+        z = torch.sigmoid(self.dec_conv1(z))
         return z
 
     def forward(self, x):
