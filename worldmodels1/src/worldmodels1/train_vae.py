@@ -12,6 +12,8 @@ import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s]: %(message)s')
 
+rank = dist.get_rank()
+torch.cuda.set_device(rank)
 dist.init_process_group(backend='nccl')
 
 # Argument parser setup
