@@ -3,21 +3,43 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
+import numpy as np
 from cnnvae import VAE
+from torch.nn.parallel import DistributedDataParallel
+from torch.utils.data.distributed import DistributedSampler
+import torch.distributed as dist
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s]: %(message)s')
+
+#dist.init_process_group(backend='nccl')
 
 # Argument parser setup
+logging.info("Parsing arguments")
 parser = argparse.ArgumentParser(description='Train VAE model for Car Racing')
 parser.add_argument('--batch_size', type=int, default=32, help='Batch size')
 parser.add_argument('--epochs', type=int, default=100, help='Number of epochs')
 parser.add_argument('--lr', type=float, default=0.001, help='Learning rate')
 parser.add_argument('--data_path', type=str, required=True, help='Path to preprocessed data')
 parser.add_argument('--beta', type=float, default=1.0, help='Weight for KL Divergence term')
+parser.add_argument('--num_workers', type=int, default=4, help='Number of workers for data loader')
 args = parser.parse_args()
+logging.info(f'Arguments parsed: {args}')
 
-# Define your VAE, Dataset, and DataLoader classes as before
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+logging.info(f'Using device: {device}')
+#number of gpus
+logging.info(f'Number of gpus: {torch.cuda.device_count()}')
+
+# Load your saved data
+logging.info(f'Loading data from {args.data_path}')
+preprocessed_data = np.load(args.data_path, allow_pickle=True)
+logging.info('Data loaded successfully')
+
 class CarRacingDataset(Dataset):
     def __init__(self, preprocessed_data):
-        self.data = preprocessed_data
+        # Only take the 'state' part of each tuple (i.e., the first element)
+        self.data = [episode[i][0] for episode in preprocessed_data for i in range(len(episode))]
 
     def __len__(self):
         return len(self.data)
@@ -26,31 +48,39 @@ class CarRacingDataset(Dataset):
         return self.data[index]
 
 dataset = CarRacingDataset(preprocessed_data)
-dataloader = DataLoader(dataset, batch_size=32, shuffle=True, num_workers=4)
 
+
+if torch.cuda.device_count() > 1:
+    # Initialize the DistributedSampler
+    sampler = DistributedSampler(dataset)
+    # Create DataLoader with the sampler
+    dataloader = DataLoader(dataset, batch_size=args.batch_size, 
+                            shuffle=False,  # set to False
+                            num_workers=args.num_workers, 
+                            pin_memory=True,  # Optional but can improve performance with GPU
+                            sampler=sampler)  # use the DistributedSampler
+else:
+    dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
 
 # Initialize the VAE model and optimizer
-vae = VAE()
+logging.info("Initializing VAE model and optimizer")
+vae = VAE().to(device)
 if torch.cuda.device_count() > 1:
-    vae = nn.DataParallel(vae)
-vae = vae.to(device="cuda")
+    vae = DistributedDataParallel(vae)
+logging.info(f'Number of GPUs used: {torch.cuda.device_count()}')
 
 optimizer = optim.Adam(vae.parameters(), lr=args.lr)
-
-# Load your preprocessed data
-# Assume the data is loaded into a variable called preprocessed_data
-# preprocessed_data = load_data(args.data_path)
-
-dataset = CarRacingDataset(preprocessed_data)
-dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=4)
+logging.info("Optimizer initialized")
 
 # Loss criterion
 reconstruction_loss = nn.MSELoss(reduction='sum')
 
 # Training loop
+logging.info("Starting training loop")
 for epoch in range(args.epochs):
     for batch_idx, batch in enumerate(dataloader):
-        states = torch.stack([torch.tensor(t[0], dtype=torch.float32) for t in batch]).to(device="cuda")
+        logging.debug(f'Starting batch {batch_idx}/{len(dataloader)}')
+        states = batch.to(device)
         
         # Forward pass
         recon_states, mu, logvar = vae(states)
@@ -65,5 +95,7 @@ for epoch in range(args.epochs):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+        logging.debug(f'Completed batch {batch_idx} with loss {loss.item()}')
 
-    print(f'Epoch [{epoch + 1}/{args.epochs}], Loss: {loss.item()}')
+    logging.info(f'Epoch [{epoch + 1}/{args.epochs}], Loss: {loss.item()}')
+
