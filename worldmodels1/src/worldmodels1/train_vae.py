@@ -83,6 +83,7 @@ reconstruction_loss = nn.MSELoss(reduction='sum')
 
 # Training loop
 logging.info("Starting training loop")
+best_loss = float('inf')
 for epoch in range(args.epochs):
     for batch_idx, batch in enumerate(dataloader):
         logging.info(f'Starting batch {batch_idx}/{len(dataloader)}')
@@ -105,5 +106,10 @@ for epoch in range(args.epochs):
         logging.info(f'Completed batch {batch_idx} with loss {loss.item()}, Reconstruction Loss: {recon_loss.item()}, KL Divergence: {kl_div.item()}')
 
     logging.info(f'Epoch [{epoch + 1}/{args.epochs}], Total Loss: {loss.item()}, Reconstruction Loss: {recon_loss.item()}, KL Divergence: {kl_div.item()}')
-
+    #track best loss  
+    if loss.item() < best_loss:
+        best_loss = loss.item()
+        #save model
+        torch.save(vae.state_dict(), 'vae.pth')
+        logging.info('Model saved')
 
