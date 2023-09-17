@@ -4,7 +4,7 @@ import torch.optim as optim
 
 class VAE(nn.Module):
     def __init__(self):
-        super(SymmetricVAE, self).__init__()
+        super(VAE, self).__init__()
 
         # Encoder
         self.enc_conv1 = nn.Conv2d(1, 32, kernel_size=4, stride=2, padding=1)  # Output size: 32x32x32
