@@ -7,9 +7,9 @@ class VAE(nn.Module):
         super(VAE, self).__init__()
 
         # Encoder
-        self.enc_conv1 = nn.Conv2d(1, 32, kernel_size=4, stride=2)
-        self.enc_conv2 = nn.Conv2d(32, 64, kernel_size=4, stride=2)
-        self.enc_conv3 = nn.Conv2d(64, 128, kernel_size=4, stride=2)
+        self.enc_conv1 = nn.Conv2d(1, 32, kernel_size=4, stride=2, padding=1)  # Output size: 32x32x32
+        self.enc_conv2 = nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1) # Output size: 16x16x64
+        self.enc_conv3 = nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1) # Output size: 8x
         self.enc_fc1 = nn.Linear(128 * 8 * 8, 256)
         self.enc_fc2_mean = nn.Linear(256, 32)
         self.enc_fc2_logvar = nn.Linear(256, 32)
@@ -17,9 +17,10 @@ class VAE(nn.Module):
         # Decoder
         self.dec_fc1 = nn.Linear(32, 256)
         self.dec_fc2 = nn.Linear(256, 128 * 8 * 8)
-        self.dec_conv1 = nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2)
-        self.dec_conv2 = nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2)
-        self.dec_conv3 = nn.ConvTranspose2d(32, 1, kernel_size=4, stride=2)
+        self.dec_conv3 = nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1) # Output size: 16x16x64
+        self.dec_conv2 = nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1) # Output size: 32x32x32
+        self.dec_conv1 = nn.ConvTranspose2d(32, 1, kernel_size=4, stride=2, padding=1)  # Output size: 64x64x1
+
 
     def encode(self, x):
         x = torch.relu(self.enc_conv1(x))
