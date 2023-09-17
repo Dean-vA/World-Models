@@ -32,7 +32,7 @@ class VAE(nn.Module):
     def decode(self, z):
         z = torch.relu(self.dec_fc1(z))
         z = torch.relu(self.dec_fc2(z))
-        z = z.view(z.size(0), 128, 10, 10)
+        z = z.view(z.size(0), 128, 6, 6)
         z = torch.relu(self.dec_conv1(z))
         z = torch.relu(self.dec_conv2(z))
         z = torch.sigmoid(self.dec_conv3(z))
