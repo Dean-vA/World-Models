@@ -102,5 +102,6 @@ for epoch in range(args.epochs):
         optimizer.step()
         logging.dinfo(f'Completed batch {batch_idx} with loss {loss.item()}')
 
-    logging.info(f'Epoch [{epoch + 1}/{args.epochs}], Loss: {loss.item()}')
+    logging.info(f'Epoch [{epoch + 1}/{args.epochs}], Total Loss: {loss.item()}, Reconstruction Loss: {recon_loss.item()}, KL Divergence: {kl_div.item()}')
+
 

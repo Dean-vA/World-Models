@@ -10,13 +10,13 @@ class VAE(nn.Module):
         self.enc_conv1 = nn.Conv2d(1, 32, kernel_size=4, stride=2)
         self.enc_conv2 = nn.Conv2d(32, 64, kernel_size=4, stride=2)
         self.enc_conv3 = nn.Conv2d(64, 128, kernel_size=4, stride=2)
-        self.enc_fc1 = nn.Linear(128 * 6 * 6, 256)
+        self.enc_fc1 = nn.Linear(128 * 8 * 8, 256)
         self.enc_fc2_mean = nn.Linear(256, 32)
         self.enc_fc2_logvar = nn.Linear(256, 32)
 
         # Decoder
         self.dec_fc1 = nn.Linear(32, 256)
-        self.dec_fc2 = nn.Linear(256, 128 * 6 * 6)
+        self.dec_fc2 = nn.Linear(256, 128 * 8 * 8)
         self.dec_conv1 = nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2)
         self.dec_conv2 = nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2)
         self.dec_conv3 = nn.ConvTranspose2d(32, 1, kernel_size=4, stride=2)
@@ -32,7 +32,7 @@ class VAE(nn.Module):
     def decode(self, z):
         z = torch.relu(self.dec_fc1(z))
         z = torch.relu(self.dec_fc2(z))
-        z = z.view(z.size(0), 128, 6, 6)
+        z = z.view(z.size(0), 128, 8, 8)
         z = torch.relu(self.dec_conv1(z))
         z = torch.relu(self.dec_conv2(z))
         z = torch.sigmoid(self.dec_conv3(z))
