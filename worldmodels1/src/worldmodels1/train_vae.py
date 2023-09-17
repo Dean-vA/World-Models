@@ -83,7 +83,7 @@ reconstruction_loss = nn.MSELoss(reduction='sum')
 logging.info("Starting training loop")
 for epoch in range(args.epochs):
     for batch_idx, batch in enumerate(dataloader):
-        logging.debug(f'Starting batch {batch_idx}/{len(dataloader)}')
+        logging.info(f'Starting batch {batch_idx}/{len(dataloader)}')
         states = batch.to(device)
         
         # Forward pass
@@ -100,7 +100,7 @@ for epoch in range(args.epochs):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        logging.debug(f'Completed batch {batch_idx} with loss {loss.item()}')
+        logging.dinfo(f'Completed batch {batch_idx} with loss {loss.item()}')
 
     logging.info(f'Epoch [{epoch + 1}/{args.epochs}], Loss: {loss.item()}')
 
