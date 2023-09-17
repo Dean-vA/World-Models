@@ -109,7 +109,7 @@ for epoch in range(args.epochs):
     #track best loss  
     if loss.item() < best_loss:
         best_loss = loss.item()
-        #save model
+        #save model 
         torch.save(vae.state_dict(), 'vae.pth')
         logging.info('Model saved')
 
