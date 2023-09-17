@@ -12,7 +12,7 @@ import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s]: %(message)s')
 
-#dist.init_process_group(backend='nccl')
+dist.init_process_group(backend='nccl')
 
 # Argument parser setup
 logging.info("Parsing arguments")
@@ -45,7 +45,9 @@ class CarRacingDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, index):
-        return self.data[index]
+        x = self.data[index]
+        x = torch.from_numpy(x).float() / 255.0  # Convert to float and normalize
+        return x
 
 dataset = CarRacingDataset(preprocessed_data)
 
