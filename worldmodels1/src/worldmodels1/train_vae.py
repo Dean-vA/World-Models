@@ -9,7 +9,7 @@ from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data.distributed import DistributedSampler
 import torch.distributed as dist
 import logging
-import tqdm
+from tqdm import tqdm
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s]: %(message)s')
 
