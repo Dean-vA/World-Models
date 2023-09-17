@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-class SymmetricVAE(nn.Module):
+class VAE(nn.Module):
     def __init__(self):
         super(SymmetricVAE, self).__init__()
 
