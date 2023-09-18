@@ -15,9 +15,9 @@ from utils import CarRacingDataset, get_dataloader
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s]: %(message)s')
 
-dist.init_process_group(backend='nccl')
-rank = dist.get_rank()
-torch.cuda.set_device(rank)
+# dist.init_process_group(backend='nccl')
+# rank = dist.get_rank()
+# torch.cuda.set_device(rank)
 
 # Argument parser setup
 logging.info("Parsing arguments")
@@ -34,11 +34,6 @@ parser.add_argument('--output_dir', type=str, default='vae.pth', help='Output di
 args = parser.parse_args()
 logging.info(f'Arguments parsed: {args}')
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-logging.info(f'Using device: {device}')
-#number of gpus
-logging.info(f'Number of gpus: {torch.cuda.device_count()}')
-
 # Load your saved data
 logging.info(f'Loading data from {args.data_path}')
 preprocessed_data = np.load(args.data_path, allow_pickle=True)
@@ -48,6 +43,11 @@ logging.info('Data loaded successfully')
 dataset = CarRacingDataset(preprocessed_data)
 dataloader = get_dataloader(preprocessed_data, args.batch_size, args.num_workers)
 logging.info('Dataset and dataloader initialized')
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+logging.info(f'Using device: {device}')
+#number of gpus
+logging.info(f'Number of gpus: {torch.cuda.device_count()}')
 
 # Initialize the VAE model and optimizer
 logging.info("Initializing VAE model and optimizer")

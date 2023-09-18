@@ -24,6 +24,9 @@ class CarRacingDataset(Dataset):
 def get_dataloader(preprocessed_data, batch_size, num_workers):
     dataset = CarRacingDataset(preprocessed_data)
     if torch.cuda.device_count() > 1:
+        dist.init_process_group(backend='nccl')
+        rank = dist.get_rank()
+        torch.cuda.set_device(rank)
         sampler = DistributedSampler(dataset)
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True, sampler=sampler)
     else:
