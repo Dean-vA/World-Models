@@ -37,7 +37,7 @@ def main(args):
     logging.info('Loading VAE model...')
     try:
         vae = VAE()
-        vae.load_state_dict(torch.load('vae.pth'))
+        vae.load_state_dict(torch.load(args.vae_path))
         vae = vae.to(device="cuda")
         vae.eval()
         logging.info('VAE model loaded successfully.')
@@ -64,6 +64,11 @@ def main(args):
                         latent_action_pairs.append(np.concatenate([latent, action]))
                     pbar.update(1)
         logging.info('Latent vectors generated successfully.')
+        # Save the latent vectors
+        logging.info(f'Saving latent vectors to {args.output_path}')
+        np.save(args.output_path, latent_action_pairs)
+        logging.info('Latent vectors saved successfully.')
+
     except Exception as e:
         logging.error(f'Error while generating latent vectors: {e}')
         return
