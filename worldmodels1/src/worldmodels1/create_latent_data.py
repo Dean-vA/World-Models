@@ -73,10 +73,10 @@ def main(args):
                     mu, logvar = vae.encode(states)
                     z = vae.reparameterize(mu, logvar)
 
-                    latent_vectors = z.cpu().numpy().dtype('float16')
+                    latent_vectors = np.cpu().numpy()
 
                     for latent, action in zip(latent_vectors, actions):
-                        latent_action_pairs.append(np.concatenate([latent, action]))
+                        latent_action_pairs.append(np.concatenate([latent.astype(np.float16), action.astype(np.float16)]))
                     pbar.update(1)
         logging.info('Latent vectors generated successfully.')
         # Save the latent vectors
