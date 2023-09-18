@@ -65,6 +65,7 @@ def main(args):
                         logging.info(f'Batch shape: {[t[0].shape for t in batch]}') 
                         logging.info(f'Image shape: {batch[0][0].shape}')
                         logging.info(f'Action shape: {batch[1][0].shape}')
+                        first_run = False  # update the flag variable
 
                     states = torch.stack([s for s in batch[0]]).to(device="cuda")
                     actions = torch.stack([a for a in batch[1]]).cpu().numpy()
