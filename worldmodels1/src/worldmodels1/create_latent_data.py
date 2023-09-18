@@ -64,8 +64,8 @@ def main(args):
                     logging.info(f'Image shape: {batch[0][0].shape}')
                     logging.info(f'Action shape: {batch[1][0].shape}')
 
-                    states = torch.stack([torch.tensor(t[0], dtype=torch.float32).to(device="cuda") for t in batch])
-                    actions = torch.stack([torch.tensor(t[1], dtype=torch.float32) for t in batch]).cpu().numpy()
+                    states = torch.stack([s for s in batch[0]]).to(device="cuda")
+                    actions = torch.stack([a for a in batch[1]]).cpu().numpy()
 
                     mu, logvar = vae.encoder(states)
                     z = vae.reparameterize(mu, logvar)
