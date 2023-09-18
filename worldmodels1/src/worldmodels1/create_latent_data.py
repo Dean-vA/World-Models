@@ -22,7 +22,7 @@ def main(args):
 
     logging.info(f'Loading data from {data_path}')
     try:
-        preprocessed_data = np.load(data_path, allow_pickle=True, num_workers=num_workers)
+        preprocessed_data = np.load(data_path, allow_pickle=True)
         logging.info('Data loaded successfully.')
     except Exception as e:
         logging.error(f'Error while loading data: {e}')
