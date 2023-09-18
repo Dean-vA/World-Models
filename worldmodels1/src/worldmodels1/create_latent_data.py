@@ -37,7 +37,7 @@ def main(args):
     logging.info('Loading VAE model...')
     try:
         vae = VAE()
-        vae.load_state_dict(torch.load(args.vae_path))
+        vae.load_state_dict(torch.load(args.vae_path, map_location=torch.device('cuda')))
         vae = vae.to(device="cuda")
         vae.eval()
         logging.info('VAE model loaded successfully.')
