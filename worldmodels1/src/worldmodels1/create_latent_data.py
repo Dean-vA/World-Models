@@ -67,7 +67,7 @@ def main(args):
                     states = torch.stack([s for s in batch[0]]).to(device="cuda")
                     actions = torch.stack([a for a in batch[1]]).cpu().numpy()
 
-                    mu, logvar = vae.encoder(states)
+                    mu, logvar = vae.encode(states)
                     z = vae.reparameterize(mu, logvar)
 
                     latent_vectors = z.cpu().numpy()
