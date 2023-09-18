@@ -22,7 +22,7 @@ def main(args):
 
     logging.info(f'Loading data from {data_path}')
     try:
-        preprocessed_data = np.load(data_path, allow_pickle=True)
+        preprocessed_data = np.load(data_path, allow_pickle=True, num_workers=num_workers)
         logging.info('Data loaded successfully.')
     except Exception as e:
         logging.error(f'Error while loading data: {e}')
@@ -59,7 +59,8 @@ def main(args):
             with tqdm(total=len(dataloader), desc='Creating latent vectors', unit='batch') as pbar:
                 for batch in dataloader:
                     # Print details about the batch
-                    logging.info(f'Batch size: {len(batch)}')
+                    logging.info(f'Batch size: {len(batch[0])}')
+                    logging.info(f'Batch shape: {[t[0].shape for t in batch]}') 
                     logging.info(f'Image shape: {batch[0][0].shape}')
                     logging.info(f'Action shape: {batch[0][1].shape}')
 
