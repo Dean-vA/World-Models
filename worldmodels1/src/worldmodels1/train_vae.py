@@ -102,8 +102,8 @@ for epoch in range(args.epochs):
             recon_states, mu, logvar = vae(states)
             
             # Loss computation
-            recon_loss = reconstruction_loss(recon_states, states)
-            kl_div = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+            recon_loss = reconstruction_loss(recon_states, states)/args.batch_size
+            kl_div = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())/args.batch_size
             
             loss = recon_loss + args.beta * kl_div
             
