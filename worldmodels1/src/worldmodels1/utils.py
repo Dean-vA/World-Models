@@ -10,7 +10,7 @@ class CarRacingDataset(Dataset):
         self.actiondata = [episode[i][1] for episode in preprocessed_data for i in range(len(episode))]
 
     def __len__(self):
-        return len(self.data)
+        return len(self.imgdata)
 
     def __getitem__(self, index):
         x = self.imgdata[index]
