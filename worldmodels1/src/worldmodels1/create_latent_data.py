@@ -30,8 +30,7 @@ def main(args):
 
     logging.info('Initializing dataset and dataloader...')
     try:
-        dataset = CarRacingDataset(preprocessed_data)
-        dataloader = get_dataloader(preprocessed_data, batch_size, num_workers)
+        dataloader = get_dataloader(preprocessed_data, batch_size, num_workers, get_action=True)
         logging.info('Dataset and dataloader initialized successfully.')
     except Exception as e:
         logging.error(f'Error while initializing dataset and dataloader: {e}')
@@ -59,6 +58,11 @@ def main(args):
         with torch.no_grad():
             with tqdm(total=len(dataloader), desc='Creating latent vectors', unit='batch') as pbar:
                 for batch in dataloader:
+                    # Print details about the batch
+                    logging.info(f'Batch size: {len(batch)}')
+                    logging.info(f'Image shape: {batch[0][0].shape}')
+                    logging.info(f'Action shape: {batch[0][1].shape}')
+
                     states = torch.stack([torch.tensor(t[0], dtype=torch.float32).to(device="cuda") for t in batch])
                     actions = torch.stack([torch.tensor(t[1], dtype=torch.float32) for t in batch]).cpu().numpy()
 
