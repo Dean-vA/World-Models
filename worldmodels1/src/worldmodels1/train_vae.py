@@ -123,7 +123,7 @@ for epoch in range(args.epochs):
     if loss.item() < best_loss:
         best_loss = loss.item()
         #save model 
-        torch.save(vae.state_dict(), 'vae.pth')
+        torch.save(vae.state_dict(), 'vae2.pth')
         logging.info('Model saved')
         #save loss metrics to json file
         with open('losses.json', 'w') as f:
