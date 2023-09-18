@@ -5,16 +5,19 @@ import torch.distributed as dist
 import numpy as np
 
 class CarRacingDataset(Dataset):
-    def __init__(self, preprocessed_data):
-        self.data = [episode[i][0] for episode in preprocessed_data for i in range(len(episode))]
+    def __init__(self, preprocessed_data, get_action=False):
+        self.imgdata = [episode[i][0] for episode in preprocessed_data for i in range(len(episode))]
+        self.actiondata = [episode[i][1] for episode in preprocessed_data for i in range(len(episode))]
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, index):
-        x = self.data[index]
+        x = self.imgdata[index]
         x = torch.from_numpy(x).float() / 255.0
         x = x.unsqueeze(0)
+        if self.get_action:
+            return x, self.actiondata[index]
         return x
 
 def get_dataloader(preprocessed_data, batch_size, num_workers):
