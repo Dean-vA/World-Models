@@ -6,6 +6,7 @@ import numpy as np
 
 class CarRacingDataset(Dataset):
     def __init__(self, preprocessed_data, get_action=False):
+        self.get_action = get_action
         self.imgdata = [episode[i][0] for episode in preprocessed_data for i in range(len(episode))]
         self.actiondata = [episode[i][1] for episode in preprocessed_data for i in range(len(episode))]
 
