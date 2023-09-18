@@ -27,6 +27,9 @@ parser.add_argument('--lr', type=float, default=0.001, help='Learning rate')
 parser.add_argument('--data_path', type=str, required=True, help='Path to preprocessed data')
 parser.add_argument('--beta', type=float, default=1.0, help='Weight for KL Divergence term')
 parser.add_argument('--num_workers', type=int, default=4, help='Number of workers for data loader')
+#add arg for output directory and filename
+parser.add_argument('--output_dir', type=str, default='vae.pth', help='Output directory')
+
 args = parser.parse_args()
 logging.info(f'Arguments parsed: {args}')
 
@@ -99,8 +102,8 @@ for epoch in range(args.epochs):
             recon_states, mu, logvar = vae(states)
             
             # Loss computation
-            recon_loss = reconstruction_loss(recon_states, states)
-            kl_div = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+            recon_loss = reconstruction_loss(recon_states, states)/args.batch_size
+            kl_div = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())/args.batch_size
             
             loss = recon_loss + args.beta * kl_div
             
@@ -123,7 +126,8 @@ for epoch in range(args.epochs):
     if loss.item() < best_loss:
         best_loss = loss.item()
         #save model 
-        torch.save(vae.state_dict(), 'vae2.pth')
+        torch.save(vae.state_dict(), 'vae.pth')
+        torch.save(vae.state_dict(), args.output_dir)
         logging.info('Model saved')
         #save loss metrics to json file
         with open('losses.json', 'w') as f:
