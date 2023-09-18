@@ -73,7 +73,7 @@ def main(args):
                     mu, logvar = vae.encode(states)
                     z = vae.reparameterize(mu, logvar)
 
-                    latent_vectors = np.cpu().numpy()
+                    latent_vectors = z.cpu().numpy()
 
                     for latent, action in zip(latent_vectors, actions):
                         latent_action_pairs.append(np.concatenate([latent.astype(np.float16), action.astype(np.float16)]))
