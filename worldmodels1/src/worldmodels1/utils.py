@@ -21,8 +21,8 @@ class CarRacingDataset(Dataset):
             return x, self.actiondata[index]
         return x
 
-def get_dataloader(preprocessed_data, batch_size, num_workers):
-    dataset = CarRacingDataset(preprocessed_data)
+def get_dataloader(preprocessed_data, batch_size, num_workers, get_action=False):
+    dataset = CarRacingDataset(preprocessed_data, get_action=get_action)
     if torch.cuda.device_count() > 1:
         dist.init_process_group(backend='nccl')
         rank = dist.get_rank()
