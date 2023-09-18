@@ -62,7 +62,7 @@ def main(args):
                     logging.info(f'Batch size: {len(batch[0])}')
                     logging.info(f'Batch shape: {[t[0].shape for t in batch]}') 
                     logging.info(f'Image shape: {batch[0][0].shape}')
-                    logging.info(f'Action shape: {batch[0][1].shape}')
+                    logging.info(f'Action shape: {batch[1][0].shape}')
 
                     states = torch.stack([torch.tensor(t[0], dtype=torch.float32).to(device="cuda") for t in batch])
                     actions = torch.stack([torch.tensor(t[1], dtype=torch.float32) for t in batch]).cpu().numpy()
