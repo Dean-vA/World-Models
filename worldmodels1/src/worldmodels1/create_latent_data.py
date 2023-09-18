@@ -55,14 +55,16 @@ def main(args):
 
     logging.info('Generating latent vectors...')
     try:
+        first_run = True  # flag variable to print details about the first batch
         with torch.no_grad():
             with tqdm(total=len(dataloader), desc='Creating latent vectors', unit='batch') as pbar:
                 for batch in dataloader:
-                    # Print details about the batch
-                    logging.info(f'Batch size: {len(batch[0])}')
-                    logging.info(f'Batch shape: {[t[0].shape for t in batch]}') 
-                    logging.info(f'Image shape: {batch[0][0].shape}')
-                    logging.info(f'Action shape: {batch[1][0].shape}')
+                    if first_run:
+                        # Print details about the batch
+                        logging.info(f'Batch size: {len(batch[0])}')
+                        logging.info(f'Batch shape: {[t[0].shape for t in batch]}') 
+                        logging.info(f'Image shape: {batch[0][0].shape}')
+                        logging.info(f'Action shape: {batch[1][0].shape}')
 
                     states = torch.stack([s for s in batch[0]]).to(device="cuda")
                     actions = torch.stack([a for a in batch[1]]).cpu().numpy()
