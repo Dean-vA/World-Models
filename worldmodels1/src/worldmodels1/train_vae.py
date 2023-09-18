@@ -10,6 +10,7 @@ from torch.utils.data.distributed import DistributedSampler
 import torch.distributed as dist
 import logging
 from tqdm import tqdm
+import json
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s]: %(message)s')
 
@@ -82,6 +83,9 @@ logging.info("Optimizer initialized")
 # Loss criterion
 reconstruction_loss = nn.MSELoss(reduction='sum')
 
+#Dictonary to store the loss metrics
+losses = {'total_loss': [], 'recon_loss': [], 'kl_div': []}
+
 # Training loop
 logging.info("Starting training loop")
 best_loss = float('inf')
@@ -110,11 +114,21 @@ for epoch in range(args.epochs):
             pbar.update(1)
         
     logging.info(f'Epoch [{epoch + 1}/{args.epochs}], Total Loss: {loss.item()}, Reconstruction Loss: {recon_loss.item()}, KL Divergence: {kl_div.item()}')
+    #track loss metrics
+    losses['total_loss'].append(loss.item())
+    losses['recon_loss'].append(recon_loss.item())
+    losses['kl_div'].append(kl_div.item())
+
     #track best loss  
     if loss.item() < best_loss:
         best_loss = loss.item()
         #save model 
         torch.save(vae.state_dict(), 'vae.pth')
         logging.info('Model saved')
+        #save loss metrics to json file
+        with open('losses.json', 'w') as f:
+            json.dump(losses, f)
+        logging.info('Losses saved')
+
 
 
