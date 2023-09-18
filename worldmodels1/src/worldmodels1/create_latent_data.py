@@ -5,6 +5,9 @@ import numpy as np
 from tqdm import tqdm
 from utils import CarRacingDataset, get_dataloader
 import logging
+import os
+
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 def main(args):
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -37,7 +40,11 @@ def main(args):
     logging.info('Loading VAE model...')
     try:
         vae = VAE()
-        vae.load_state_dict(torch.load(args.vae_path, map_location=torch.device('cuda')))
+        state_dict = torch.load(args.vae_path, map_location=torch.device('cuda'))
+        # Remove 'module.' prefix from state_dict keys
+        new_state_dict = {k.replace("module.", ""): v for k, v in state_dict.items()}
+        vae.load_state_dict(new_state_dict)
+
         vae = vae.to(device="cuda")
         vae.eval()
         logging.info('VAE model loaded successfully.')
