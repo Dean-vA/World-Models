@@ -21,7 +21,7 @@ class CarRacingDataset(Dataset):
             return x, self.actiondata[index]
         return x
 
-def get_dataloader(preprocessed_data, batch_size, num_workers, get_action=False):
+def get_dataloader(preprocessed_data, batch_size, num_workers, get_action=False, shuffle=True):
     dataset = CarRacingDataset(preprocessed_data, get_action=get_action)
     if torch.cuda.device_count() > 1:
         dist.init_process_group(backend='nccl')
@@ -30,7 +30,7 @@ def get_dataloader(preprocessed_data, batch_size, num_workers, get_action=False)
         sampler = DistributedSampler(dataset)
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True, sampler=sampler)
     else:
-        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
+        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
     return dataloader
 
 class MemoryModelDataset(Dataset):

@@ -30,7 +30,7 @@ def main(args):
 
     logging.info('Initializing dataset and dataloader...')
     try:
-        dataloader = get_dataloader(preprocessed_data, batch_size, num_workers, get_action=True)
+        dataloader = get_dataloader(preprocessed_data, batch_size, num_workers, get_action=True, shuffle=args.shuffle)
         logging.info('Dataset and dataloader initialized successfully.')
     except Exception as e:
         logging.error(f'Error while initializing dataset and dataloader: {e}')
@@ -92,6 +92,7 @@ if __name__ == '__main__':
     parser.add_argument('--output_path', type=str, default='data/latent_action_pairs.npy', help='Path to the output file.')
     parser.add_argument('--batch_size', type=int, default=64, help='Batch size for the dataloader.')
     parser.add_argument('--num_workers', type=int, default=8, help='Number of worker threads for the dataloader.')
+    parser.add_argument('--shuffle', type=bool, default=False, help='Whether to shuffle the data or not.')
     
     args = parser.parse_args()
     
