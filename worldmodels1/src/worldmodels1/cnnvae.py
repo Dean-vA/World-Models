@@ -40,8 +40,12 @@ class VAE(nn.Module):
 
     def forward(self, x):
         mu, logvar = self.encode(x)
+        z = self.reparameterize(mu, logvar)
+        x_recon = self.decode(z)
+        return x_recon, mu, logvar
+    
+    def reparameterize(self, mu, logvar):
         std = torch.exp(0.5 * logvar)
         eps = torch.randn_like(std)
         z = mu + eps * std
-        x_recon = self.decode(z)
-        return x_recon, mu, logvar
+        return z

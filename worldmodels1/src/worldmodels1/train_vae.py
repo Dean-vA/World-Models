@@ -11,6 +11,7 @@ import torch.distributed as dist
 import logging
 from tqdm import tqdm
 import json
+from utils import CarRacingDataset, get_dataloader
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s]: %(message)s')
 
@@ -43,35 +44,10 @@ logging.info(f'Loading data from {args.data_path}')
 preprocessed_data = np.load(args.data_path, allow_pickle=True)
 logging.info('Data loaded successfully')
 
-class CarRacingDataset(Dataset):
-    def __init__(self, preprocessed_data):
-        # Only take the 'state' part of each tuple (i.e., the first element)
-        self.data = [episode[i][0] for episode in preprocessed_data for i in range(len(episode))]
-
-    def __len__(self):
-        return len(self.data)
-
-    def __getitem__(self, index):
-        x = self.data[index]
-        x = torch.from_numpy(x).float() / 255.0  # Convert to float and normalize
-        #unsqueeze to add a dimension of size one at the specified position
-        x = x.unsqueeze(0)  # Add channel dimension 
-        return x
-
+# Dataset and dataloader initialization
 dataset = CarRacingDataset(preprocessed_data)
-
-
-if torch.cuda.device_count() > 1:
-    # Initialize the DistributedSampler
-    sampler = DistributedSampler(dataset)
-    # Create DataLoader with the sampler
-    dataloader = DataLoader(dataset, batch_size=args.batch_size, 
-                            shuffle=False,  # set to False
-                            num_workers=args.num_workers, 
-                            pin_memory=True,  # Optional but can improve performance with GPU
-                            sampler=sampler)  # use the DistributedSampler
-else:
-    dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
+dataloader = get_dataloader(preprocessed_data, args.batch_size, args.num_workers)
+logging.info('Dataset and dataloader initialized')
 
 # Initialize the VAE model and optimizer
 logging.info("Initializing VAE model and optimizer")
