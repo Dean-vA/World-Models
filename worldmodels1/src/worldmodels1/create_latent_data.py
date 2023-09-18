@@ -92,7 +92,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate latent vectors using a pretrained VAE model.')
     parser.add_argument('--data_path', type=str, default='data/collected_data.npy', help='Path to the data file.')
     parser.add_argument('--vae_path', type=str, default='vae.pth', help='Path to the pretrained VAE model.')
-    parser.add_argument('--output_path', type=str, default='data/latent_action_pairs.npy', help='Path to the output file.')
+    parser.add_argument('--output_path', type=str, default='latent_action_pairs.npy', help='Path to the output file.')
     parser.add_argument('--batch_size', type=int, default=64, help='Batch size for the dataloader.')
     parser.add_argument('--num_workers', type=int, default=8, help='Number of worker threads for the dataloader.')
     parser.add_argument('--shuffle', type=bool, default=False, help='Whether to shuffle the data or not.')
