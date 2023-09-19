@@ -74,7 +74,7 @@ def main(args):
                     # log episode and step count
                     if args.get_metadata:
                         logging.info(f'Data from episode: {batch[2][0]}, Data from step: {batch[3][0]}')
-                        print(f'Data from episode: {batch[2][0]}, Data from step: {batch[3][0]}')
+                        print(f'Data from episode: {batch[2][:]}, Data from step: {batch[3][:]}')
                         episodes = torch.stack([e for e in batch[2]]).cpu().numpy()
                         steps = torch.stack([s for s in batch[3]]).cpu().numpy()
 
