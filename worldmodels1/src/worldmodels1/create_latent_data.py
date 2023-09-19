@@ -68,7 +68,7 @@ def main(args):
                         logging.info(f'Action shape: {batch[1][0].shape}')
                         if args.get_metadata:
                             logging.info(f'Data from episode: {batch[2][0]}')
-                            logging.info(f'Data from step: {batch[3][0]}')
+                            logging.info(f'Data from step: {batch[3][0]}, to step: {batch[3][-1]}')
                         first_run = False  # update the flag variable
 
                     # log episode and step count
