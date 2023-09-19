@@ -73,8 +73,8 @@ def main(args):
 
                     # log episode and step count
                     if args.get_metadata:
-                        logging.info(f'Data from episode: {batch[2][0]}, Data from step: {batch[3][0]}')
-                        print(f'Data from episode: {batch[2][:]}, Data from step: {batch[3][:]}')
+                        #logging.info(f'Data from episode: {batch[2][0]}, Data from step: {batch[3][0]}')
+                        #print(f'Data from episode: {batch[2][:]}, Data from step: {batch[3][:]}')
                         episodes = batch[2].cpu().numpy()
                         steps = batch[3].cpu().numpy()
                 
@@ -87,8 +87,8 @@ def main(args):
                     latent_vectors = z.cpu().numpy()
                     if args.get_metadata:
                         for latent, action, episode, step in zip(latent_vectors, actions, episodes, steps):
-                            print(f'Latent shape: {latent.shape}, action shape: {action.shape}, episode shape: {episode.shape}, step shape: {step.shape}')
-                            print(f'Latent: {latent}, action: {action}, episode: {episode}, step: {step}')
+                            #print(f'Latent shape: {latent.shape}, action shape: {action.shape}, episode shape: {episode.shape}, step shape: {step.shape}')
+                            #print(f'Latent: {latent}, action: {action}, episode: {episode}, step: {step}')
                             latent_action_pairs.append(np.concatenate([latent.astype(np.float16), action.astype(np.float16), [episode.astype(np.float16)], [step.astype(np.float16)]]))
                     else:    
                         for latent, action in zip(latent_vectors, actions):
