@@ -1,1 +1,1 @@
-worldmodels1/src/wordlmodels1/latent_action_pairs.npy filter=lfs diff=lfs merge=lfs -text
+worldmodels1/src/worldmodels1/latent_action_pairs.npy filter=lfs diff=lfs merge=lfs -text
