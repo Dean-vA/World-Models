@@ -35,7 +35,7 @@ def get_dataloader(preprocessed_data, batch_size, num_workers, get_action=False,
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True, sampler=sampler)
     else:
         logging.info(f'Shuffle: {shuffle}')
-        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
     return dataloader
 
 class MemoryModelDataset(Dataset):
