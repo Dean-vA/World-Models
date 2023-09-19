@@ -74,6 +74,8 @@ def main(args):
                     # log episode and step count
                     if args.get_metadata:
                         logging.info(f'Data from episode: {batch[2][0]}, Data from step: {batch[3][0]}')
+                        episodes = [e for e in batch[2]]
+                        steps = [s for s in batch[3]]
                     states = torch.stack([s for s in batch[0]]).to(device="cuda")
                     actions = torch.stack([a for a in batch[1]]).cpu().numpy()
 
@@ -81,9 +83,12 @@ def main(args):
                     z = vae.reparameterize(mu, logvar)
 
                     latent_vectors = z.cpu().numpy()
-
-                    for latent, action in zip(latent_vectors, actions):
-                        latent_action_pairs.append(np.concatenate([latent.astype(np.float16), action.astype(np.float16)]))
+                    if args.get_metadata:
+                        for latent, action, episode, step in zip(latent_vectors, actions, episodes, steps):
+                            latent_action_pairs.append(np.concatenate([latent.astype(np.float16), action.astype(np.float16), episode.astype(np.float16), step.astype(np.float16)]))
+                    else:    
+                        for latent, action in zip(latent_vectors, actions):
+                            latent_action_pairs.append(np.concatenate([latent.astype(np.float16), action.astype(np.float16)]))
                     pbar.update(1)
         logging.info('Latent vectors generated successfully.')
         # Save the latent vectors
