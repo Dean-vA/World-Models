@@ -89,7 +89,7 @@ def main(args):
                         for latent, action, episode, step in zip(latent_vectors, actions, episodes, steps):
                             print(f'Latent shape: {latent.shape}, action shape: {action.shape}, episode shape: {episode.shape}, step shape: {step.shape}')
                             print(f'Latent: {latent}, action: {action}, episode: {episode}, step: {step}')
-                            latent_action_pairs.append(np.concatenate([latent.astype(np.float16), action.astype(np.float16), episode.astype(np.float16), step.astype(np.float16)]))
+                            latent_action_pairs.append(np.concatenate([latent.astype(np.float16), action.astype(np.float16), [episode.astype(np.float16)], [step.astype(np.float16)]]))
                     else:    
                         for latent, action in zip(latent_vectors, actions):
                             latent_action_pairs.append(np.concatenate([latent.astype(np.float16), action.astype(np.float16)]))
