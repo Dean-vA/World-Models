@@ -28,12 +28,13 @@ class CarRacingDataset(Dataset):
         x = torch.from_numpy(x).float() / 255.0
         x = x.unsqueeze(0)
         if self.get_action:
+            if self.get_meta:
+                return x, self.actiondata[index], self.episodedata[index], self.step_countdata[index]
             return x, self.actiondata[index]
-        if self.get_meta:
-            return x, self.episodedata[index], self.step_countdata[index]
         return x
 
 def get_dataloader(preprocessed_data, batch_size, num_workers, get_action=False, shuffle=True, get_metadata=False):
+    logging.info(f'get_metadata: {get_metadata}')
     dataset = CarRacingDataset(preprocessed_data, get_action=get_action, get_metadata=get_metadata)
     if torch.cuda.device_count() > 1:
         dist.init_process_group(backend='nccl')
