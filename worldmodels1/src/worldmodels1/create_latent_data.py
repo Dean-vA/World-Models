@@ -3,7 +3,7 @@ from cnnvae import VAE
 import torch
 import numpy as np
 from tqdm import tqdm
-from utils import CarRacingDataset, get_dataloader
+from utils import get_dataloader
 import logging
 import os
 
@@ -95,7 +95,7 @@ if __name__ == '__main__':
     parser.add_argument('--output_path', type=str, default='latent_action_pairs.npy', help='Path to the output file.')
     parser.add_argument('--batch_size', type=int, default=64, help='Batch size for the dataloader.')
     parser.add_argument('--num_workers', type=int, default=8, help='Number of worker threads for the dataloader.')
-    parser.add_argument('--shuffle', type=bool, default=False, help='Whether to shuffle the data or not.')
+    parser.add_argument('--shuffle', action='store_true', help='Whether to shuffle the data or not.')
     
     args = parser.parse_args()
     
