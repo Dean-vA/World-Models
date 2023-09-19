@@ -58,7 +58,8 @@ def main(args):
         first_run = True  # flag variable to print details about the first batch
         with torch.no_grad():
             with tqdm(total=len(dataloader), desc='Creating latent vectors', unit='batch') as pbar:
-                for batch in dataloader:
+                for idx, batch in enumerate(dataloader):
+                    logging.info(f'Processing batch {idx+1}')
                     if first_run:
                         # Print details about the batch
                         logging.info(f'Batch size: {len(batch[0])}')
