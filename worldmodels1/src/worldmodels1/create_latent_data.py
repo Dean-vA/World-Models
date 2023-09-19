@@ -59,7 +59,7 @@ def main(args):
         with torch.no_grad():
             with tqdm(total=len(dataloader), desc='Creating latent vectors', unit='batch') as pbar:
                 for idx, batch in enumerate(dataloader):
-                    logging.info(f'Processing batch {idx+1}')
+                    #logging.info(f'Processing batch {idx+1}')
                     if first_run:
                         # Print details about the batch
                         logging.info(f'Batch size: {len(batch[0])}')
@@ -94,8 +94,8 @@ if __name__ == '__main__':
     parser.add_argument('--data_path', type=str, default='data/collected_data.npy', help='Path to the data file.')
     parser.add_argument('--vae_path', type=str, default='vae.pth', help='Path to the pretrained VAE model.')
     parser.add_argument('--output_path', type=str, default='latent_action_pairs.npy', help='Path to the output file.')
-    parser.add_argument('--batch_size', type=int, default=64, help='Batch size for the dataloader.')
-    parser.add_argument('--num_workers', type=int, default=8, help='Number of worker threads for the dataloader.')
+    parser.add_argument('--batch_size', type=int, default=1000, help='Batch size for the dataloader.')
+    parser.add_argument('--num_workers', type=int, default=0, help='Number of worker threads for the dataloader.')
     parser.add_argument('--shuffle', action='store_true', help='Whether to shuffle the data or not.')
     
     args = parser.parse_args()
