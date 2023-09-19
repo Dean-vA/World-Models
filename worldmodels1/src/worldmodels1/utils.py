@@ -3,6 +3,9 @@ from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.distributed import DistributedSampler
 import torch.distributed as dist
 import numpy as np
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class CarRacingDataset(Dataset):
     def __init__(self, preprocessed_data, get_action=False):
@@ -15,6 +18,7 @@ class CarRacingDataset(Dataset):
 
     def __getitem__(self, index):
         x = self.imgdata[index]
+        logging.info(f'Getting item at index {index}, with action {self.actiondata[index]}')
         x = torch.from_numpy(x).float() / 255.0
         x = x.unsqueeze(0)
         if self.get_action:
@@ -30,8 +34,8 @@ def get_dataloader(preprocessed_data, batch_size, num_workers, get_action=False,
         sampler = DistributedSampler(dataset)
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True, sampler=sampler)
     else:
-        print(f'Shuffle: {shuffle}')
-        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
+        logging.info(f'Shuffle: {shuffle}')
+        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
     return dataloader
 
 class MemoryModelDataset(Dataset):
