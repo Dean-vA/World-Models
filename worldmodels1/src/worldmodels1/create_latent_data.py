@@ -30,7 +30,7 @@ def main(args):
 
     logging.info('Initializing dataset and dataloader...')
     try:
-        dataloader = get_dataloader(preprocessed_data, batch_size, num_workers, get_action=True, shuffle=args.shuffle)
+        dataloader = get_dataloader(preprocessed_data, batch_size, num_workers, get_action=True, shuffle=args.shuffle, get_metadata=args.get_metadata)
         logging.info('Dataset and dataloader initialized successfully.')
     except Exception as e:
         logging.error(f'Error while initializing dataset and dataloader: {e}')
@@ -66,8 +66,14 @@ def main(args):
                         logging.info(f'Batch shape: {[t[0].shape for t in batch]}') 
                         logging.info(f'Image shape: {batch[0][0].shape}')
                         logging.info(f'Action shape: {batch[1][0].shape}')
+                        if args.get_metadata:
+                            logging.info(f'Data from episode: {batch[2][0]}')
+                            logging.info(f'Data from step: {batch[3][0]}')
                         first_run = False  # update the flag variable
 
+                    # log episode and step count
+                    if args.get_metadata:
+                        logging.info(f'Data from episode: {batch[2][0]}, Data from step: {batch[3][0]}')
                     states = torch.stack([s for s in batch[0]]).to(device="cuda")
                     actions = torch.stack([a for a in batch[1]]).cpu().numpy()
 
@@ -97,7 +103,8 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=1000, help='Batch size for the dataloader.')
     parser.add_argument('--num_workers', type=int, default=0, help='Number of worker threads for the dataloader.')
     parser.add_argument('--shuffle', action='store_true', help='Whether to shuffle the data or not.')
-    
+    parser.add_argument('--get_metadata', action='store_true', help='Whether to get metadata or not.')
+
     args = parser.parse_args()
     
     main(args)
