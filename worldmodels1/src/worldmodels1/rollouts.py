@@ -41,7 +41,7 @@ def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=
         while not done and step_count < max_steps:
             action = env.action_space.sample()
             next_state, reward, done, truncated, info = env.step(action)
-            episode_data.append((state, action, reward, done, episode*(worker_id+1), step_count)) #Step count and episode number to help with debugging
+            episode_data.append((state, action, reward, done, episode, step_count)) #Step count and episode number to help with debugging
             # episode_data.append((state, action, reward, next_state, done, truncated, info))
             state = preprocess_state(next_state, img_size=img_size, gray_scale=gray_scale)
             step_count += 1
