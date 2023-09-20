@@ -55,6 +55,7 @@ loss_values = []
 for epoch in tqdm(range(args.epochs), desc='Epochs'):  # Wrap the epoch loop with tqdm
     batch_tqdm = tqdm(dataloader, desc=f'Epoch {epoch + 1}', leave=False)  # Create a tqdm object for the dataloader loop
     starting_loss = None  # To hold the starting loss value for each epoch
+    best_loss = np.inf  # To hold the best loss value for each epoch
     for i, batch in enumerate(batch_tqdm):  
         # Zero the gradients
         optimizer.zero_grad()
