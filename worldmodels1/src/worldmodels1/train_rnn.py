@@ -55,7 +55,8 @@ if __name__ == '__main__':
 
             # Forward pass
             pi, mu, sigma = model(batch[0].to(device))  # [0] is the input sequence from the dataset
-
+            if i == 0:
+                logging.info(f'pi shape: {pi.shape}, mu shape: {mu.shape}, sigma shape: {sigma.shape}', 'y shape: ', batch[1].shape)
             # Compute loss
             loss = mdn_loss(batch[1].to(device), pi, mu, sigma)  # [1] is the target sequence from the dataset
 
