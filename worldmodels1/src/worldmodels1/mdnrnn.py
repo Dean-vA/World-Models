@@ -11,6 +11,7 @@ class MDN(nn.Module):
             nn.Linear(128, n_gaussians * 3)
         )
     def forward(self, x):
+        print(f'x shape: {x.shape}')
         z_h = self.z_h(x)
         print(f'z_h shape: {z_h.shape}')
         pi, mu, sigma = torch.split(z_h, 3, dim=1)
