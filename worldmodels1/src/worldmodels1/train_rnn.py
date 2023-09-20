@@ -22,7 +22,7 @@ parser.add_argument('--data_path', type=str, help='Path to the training data')
 parser.add_argument('--save_path', type=str, default='./memory_model.pth', help='Where to save the model')
 parser.add_argument('--seq_len', type=int, default=999, help='Sequence length for LSTM input')  # Added seq_len argument
 parser.add_argument('--latent_dim', type=int, default=32, help='Latent dimension of VAE')  # Added latent_dim argument
-
+parser.add_argument('--action_dim', type=int, default=3, help='Action dimension')  # Added action_dim argument
 args = parser.parse_args()
 
 # Define loss function
@@ -44,7 +44,7 @@ if __name__ == '__main__':
     logging.info('Data loaded successfully')
 
     # Initialize the model and optimizer
-    model = MemoryModel(n_input=32, n_hidden=args.n_hidden, n_gaussians=args.n_gaussians).to(device) 
+    model = MemoryModel(n_input=args.latent_dim+args.action_dim, n_hidden=args.n_hidden, n_gaussians=args.n_gaussians).to(device) 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     logging.info("Model and optimizer initialized")
 
