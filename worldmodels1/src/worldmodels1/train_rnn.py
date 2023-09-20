@@ -44,7 +44,7 @@ if __name__ == '__main__':
     logging.info('Data loaded successfully')
 
     # Initialize the model and optimizer
-    model = MemoryModel(n_input=args.latent_dim+args.action_dim, n_hidden=args.n_hidden, n_gaussians=args.n_gaussians).to(device) 
+    model = MemoryModel(n_input=args.latent_dim+args.action_dim, n_hidden=args.n_hidden, n_gaussians=args.n_gaussians, latent_dim=args.latent_dim).to(device) 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     logging.info("Model and optimizer initialized")
 
