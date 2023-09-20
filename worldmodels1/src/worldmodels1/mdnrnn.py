@@ -10,12 +10,15 @@ class MDN(nn.Module):
         self.z_h = nn.Sequential(
             nn.Linear(n_hidden, 128),
             nn.ReLU(),
-            nn.Linear(128, n_gaussians * 3 * latent_dim)
+             nn.Linear(128, n_gaussians *( 2 * latent_dim+1))
         )
         self.first = True
     def forward(self, x):         
         z_h = self.z_h(x)
-        pi, mu, sigma = torch.split(z_h, self.n_gaussians * self.latent_dim, dim=2)
+        pi, mu, sigma = torch.split(z_h, [self.n_gaussians,                             # pi - mixture coefficients a single value for each gaussian mixture
+                                          self.n_gaussians * self.latent_dim,           # mu - mean of each gaussian mixture for each latent dimension
+                                          self.n_gaussians * self.latent_dim], dim=2)   # sigma - standard deviation of each gaussian mixture for each latent dimension
+
         pi = nn.Softmax(dim=1)(pi)
         sigma = torch.exp(sigma)
         if self.first:
