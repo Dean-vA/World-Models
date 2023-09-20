@@ -49,7 +49,7 @@ if __name__ == '__main__':
     dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
     logging.info('Dataset and dataloader initialized')
 
-best_loss = np.inf
+best_loss_epoch = np.inf
 # Initialize empty list to hold loss values
 loss_values = []
 for epoch in tqdm(range(args.epochs), desc='Epochs'):  # Wrap the epoch loop with tqdm
@@ -94,6 +94,6 @@ for epoch in tqdm(range(args.epochs), desc='Epochs'):  # Wrap the epoch loop wit
             plt.savefig('loss_per_batch.png')  # This saves the figure to the current working directory
 
     # Save the model if it has the best loss
-    if loss.item() < best_loss:
+    if loss.item() < best_loss_epoch:
         torch.save(model.state_dict(), args.save_path)
         logging.info(f'Model saved to {args.save_path}, previous best loss: {best_loss:.4f}, current best loss: {loss.item():.4f}')
