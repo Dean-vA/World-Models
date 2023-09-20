@@ -50,17 +50,23 @@ class MemoryModel(nn.Module):
         return pi, mu, sigma
 
 def mdn_loss(y, pi, mu, sigma):
-    m = Normal(loc=mu, scale=sigma)
+    # Expand dimensions of y to match the shape of the Gaussian parameters
+    y = y.unsqueeze(2).expand_as(mu)
+    
+    # Create Gaussian distribution with the given mean and standard deviation
+    m = torch.distributions.Normal(loc=mu, scale=sigma)
+    
+    # Compute log probability of y under the Gaussian distribution
     log_prob = m.log_prob(y)
     
-    # LogSumExp trick for numerical stability
-    log_prob = log_prob + torch.log(pi)
-    max_log_prob = torch.max(log_prob, dim=2, keepdim=True)[0]
-    log_prob = log_prob - max_log_prob
+    # Combine the log probabilities with the mixture weights
+    log_prob_weighted = log_prob + torch.log(pi)
+    
+    # Compute the log sum using log-sum-exp trick for numerical stability
+    max_log_prob_weighted = torch.max(log_prob_weighted, dim=2, keepdim=True)[0]
+    log_prob_sum = max_log_prob_weighted + torch.log(torch.sum(torch.exp(log_prob_weighted - max_log_prob_weighted), dim=2, keepdim=True))
+    
+    # Return the negative log likelihood as the loss
+    return -torch.mean(log_prob_sum)
 
-    # LogSumExp continued
-    prob = torch.exp(log_prob)
-    loss = -torch.log(torch.sum(prob, dim=2)) + max_log_prob.squeeze()
-
-    return loss.mean()
 
