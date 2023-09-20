@@ -61,10 +61,10 @@ if __name__ == '__main__':
             optimizer.zero_grad()
 
             # Forward pass
-            pi, mu, sigma = model(batch['input'].to(device))  # Ensure you use 'input' from the dict and send it to device
+            pi, mu, sigma = model(batch[0].to(device))  # [0] is the input sequence from the dataset
 
             # Compute loss
-            loss = loss_function(pi, mu, sigma, batch['target'].to(device))  # Ensure you use 'target' from the dict and send it to device
+            loss = loss_function(pi, mu, sigma, batch[1].to(device))  # [1] is the target sequence from the dataset
 
             # Backward pass and optimization
             loss.backward()
