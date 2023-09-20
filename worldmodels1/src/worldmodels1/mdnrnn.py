@@ -18,7 +18,7 @@ class MDN(nn.Module):
         return pi, mu, sigma
 
 class MemoryModel(nn.Module):
-    def __init__(self, n_input, n_hidden, n_output, n_gaussians):
+    def __init__(self, n_input, n_hidden, n_gaussians):
         super(MemoryModel, self).__init__()
         self.lstm = nn.LSTM(n_input, n_hidden, batch_first=True)
         self.mdn = MDN(n_hidden, n_gaussians)
