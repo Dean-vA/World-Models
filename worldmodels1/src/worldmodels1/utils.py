@@ -48,14 +48,16 @@ def get_dataloader(preprocessed_data, batch_size, num_workers, get_action=False,
     return dataloader
 
 class MemoryModelDataset(Dataset):
-    def __init__(self, latent_action_pairs, seq_length=1000, latent_dim=32):
+    def __init__(self, latent_action_pairs, seq_length=999, latent_dim=32):
         self.latent_action_pairs = latent_action_pairs
         self.seq_length = seq_length
+        self.latent_dim = latent_dim # Make sure this matches with `n_input` in MemoryModel
 
     def __len__(self):
         return len(self.latent_action_pairs) - self.seq_length  # To avoid out-of-index errors
 
     def __getitem__(self, index):
         input_sequence = self.latent_action_pairs[index:index+self.seq_length]
-        target = self.latent_action_pairs[index+self.seq_length][:self.latent_dim]  # Assuming the latent vector is the first 32 elements
-        return {'input': input_sequence, 'target': target}
+        # teacher forcing (shift by one predictions) only inlcude the latent vectors
+        target = self.latent_action_pairs[index+1:index+self.seq_length+1][:, :self.latent_dim]
+        return torch.FloatTensor(input_sequence), torch.FloatTensor(target)
