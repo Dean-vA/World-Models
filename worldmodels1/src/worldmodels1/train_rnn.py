@@ -86,7 +86,7 @@ for epoch in tqdm(range(args.epochs), desc='Epochs'):  # Wrap the epoch loop wit
         if i % 10 == 0:  # Update every 10 batches
             batch_tqdm.set_postfix({"Starting Loss": f"{starting_loss:.4f}", "Best Loss": f"{best_loss:.4f}", "Current Loss": f"{loss.item():.4f}"})  
 
-        if i % 100 == 0: # Save the plot every 100 batches
+        if i % 10000 == 0: # Save the plot every 100 batches
             # Plotting the loss values
             plt.plot(loss_values)
             plt.xlabel('Batch Number')
