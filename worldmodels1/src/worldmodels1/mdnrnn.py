@@ -5,7 +5,6 @@ import torch.optim as optim
 class MDN(nn.Module):
     def __init__(self, n_hidden, n_gaussians):
         super(MDN, self).__init__()
-        self.n_gaussians = n_gaussians
         self.z_h = nn.Sequential(
             nn.Linear(n_hidden, 128),
             nn.ReLU(),
@@ -13,7 +12,8 @@ class MDN(nn.Module):
         )
     def forward(self, x):
         z_h = self.z_h(x)
-        pi, mu, sigma = torch.split(z_h, self.n_gaussians, dim=1)
+        print(z_h.shape)
+        pi, mu, sigma = torch.split(z_h, 3, dim=1)
         pi = nn.Softmax(dim=1)(pi)
         sigma = torch.exp(sigma)
         return pi, mu, sigma
