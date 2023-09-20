@@ -4,7 +4,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torch.distributions.normal import Normal
 from utils import MemoryModelDataset
-from mdnrnn import MemoryModel  # Import MemoryModel from mdnrnn.py
+from mdnrnn import MemoryModel, mdn_loss  # Import MemoryModel from mdnrnn.py
 import numpy as np
 import logging
 from tqdm import tqdm
@@ -24,14 +24,7 @@ parser.add_argument('--seq_len', type=int, default=999, help='Sequence length fo
 parser.add_argument('--latent_dim', type=int, default=32, help='Latent dimension of VAE')  # Added latent_dim argument
 parser.add_argument('--action_dim', type=int, default=3, help='Action dimension')  # Added action_dim argument
 args = parser.parse_args()
-
-# Define loss function
-def loss_function(pi, mu, sigma, y):
-    result = Normal(loc=mu, scale=sigma).log_prob(y)
-    result += torch.log(pi)
-    result = torch.logsumexp(result, dim=1)
-    return -torch.mean(result)
-
+logging.info(f'Arguments parsed: {args}')
 
 # Main training loop
 if __name__ == '__main__':
@@ -64,7 +57,7 @@ if __name__ == '__main__':
             pi, mu, sigma = model(batch[0].to(device))  # [0] is the input sequence from the dataset
 
             # Compute loss
-            loss = loss_function(pi, mu, sigma, batch[1].to(device))  # [1] is the target sequence from the dataset
+            loss = mdn_loss(batch[1].to(device), pi, mu, sigma)  # [1] is the target sequence from the dataset
 
             # Backward pass and optimization
             loss.backward()
