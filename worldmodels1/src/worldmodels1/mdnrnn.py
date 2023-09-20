@@ -14,7 +14,7 @@ class MDN(nn.Module):
         )
         self.first = True
     def forward(self, x):         
-        z_h = self.z_h(x)
+        z_h = self.z_h(x)                                                               ## TO DO FIGURE OUT IF PI should be [batch_size, seq_len, n_gaussians] or [batch_size, seq_len, n_gaussians*latent_dim]
         pi, mu, sigma = torch.split(z_h, [self.n_gaussians,                             # pi - mixture coefficients a single value for each gaussian mixture
                                           self.n_gaussians * self.latent_dim,           # mu - mean of each gaussian mixture for each latent dimension
                                           self.n_gaussians * self.latent_dim], dim=2)   # sigma - standard deviation of each gaussian mixture for each latent dimension
@@ -59,6 +59,9 @@ def mdn_loss(y, pi, mu, sigma):
     # Compute log probability of y under the Gaussian distribution
     log_prob = m.log_prob(y)
     
+    # Make sure the dimensions of pi are consistent with log_prob
+    pi = pi.unsqueeze(-1).expand_as(log_prob)  # adding the latent_dim axis THIS IS ONLY NEEDED IF PI IS [batch_size, seq_len, n_gaussians] not [batch_size, seq_len, n_gaussians*latent_dim]
+
     # Combine the log probabilities with the mixture weights
     log_prob_weighted = log_prob + torch.log(pi)
     
