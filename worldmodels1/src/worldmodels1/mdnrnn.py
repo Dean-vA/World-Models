@@ -12,7 +12,7 @@ class MDN(nn.Module):
         )
     def forward(self, x):
         z_h = self.z_h(x)
-        print(z_h.shape)
+        print(f'z_h shape: {z_h.shape}')
         pi, mu, sigma = torch.split(z_h, 3, dim=1)
         pi = nn.Softmax(dim=1)(pi)
         sigma = torch.exp(sigma)
