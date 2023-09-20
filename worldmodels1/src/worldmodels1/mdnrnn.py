@@ -31,8 +31,12 @@ class MemoryModel(nn.Module):
         super(MemoryModel, self).__init__()
         self.lstm = nn.LSTM(n_input, n_hidden, batch_first=True)
         self.mdn = MDN(n_hidden, n_gaussians)
+        self.first = True
 
     def forward(self, x):
+        if self.first:
+            print(f'input shape: {x.shape}')
+            self.first = False
         lstm_out, _ = self.lstm(x)
         pi, mu, sigma = self.mdn(lstm_out)
         return pi, mu, sigma
