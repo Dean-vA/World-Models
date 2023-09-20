@@ -4,19 +4,26 @@ import torch.optim as optim
 
 class MDN(nn.Module):
     def __init__(self, n_hidden, n_gaussians):
+        self.n_gaussians = n_gaussians
         super(MDN, self).__init__()
         self.z_h = nn.Sequential(
             nn.Linear(n_hidden, 128),
             nn.ReLU(),
             nn.Linear(128, n_gaussians * 3)
         )
-    def forward(self, x):
-        print(f'x shape: {x.shape}')
+        self.first = True
+    def forward(self, x):         
         z_h = self.z_h(x)
-        print(f'z_h shape: {z_h.shape}')
-        pi, mu, sigma = torch.split(z_h, 3, dim=1)
+        pi, mu, sigma = torch.split(z_h, self.n_gaussians, dim=2)
         pi = nn.Softmax(dim=1)(pi)
         sigma = torch.exp(sigma)
+        if self.first:
+            print(f'x shape: {x.shape}')
+            print(f'z_h shape: {z_h.shape}')
+            print(f'pi shape: {pi.shape}')
+            print(f'mu shape: {mu.shape}')
+            print(f'sigma shape: {sigma.shape}')
+            self.first = False
         return pi, mu, sigma
 
 class MemoryModel(nn.Module):
