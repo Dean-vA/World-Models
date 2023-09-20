@@ -19,7 +19,7 @@ class MDN(nn.Module):
                                           self.n_gaussians * self.latent_dim,           # mu - mean of each gaussian mixture for each latent dimension
                                           self.n_gaussians * self.latent_dim], dim=2)   # sigma - standard deviation of each gaussian mixture for each latent dimension
 
-        pi = nn.Softmax(dim=1)(pi)
+        pi = nn.Softmax(dim=2)(pi)
         sigma = torch.exp(sigma)
         if self.first:
             print(f'lstm output/mdn input shape: {x.shape}')
@@ -28,6 +28,10 @@ class MDN(nn.Module):
             print(f'mu shape: {mu.shape}')
             print(f'sigma shape: {sigma.shape}')
             self.first = False
+        #reshape to match dimensions of the output
+        pi = pi.view(pi.shape[0], pi.shape[1], self.n_gaussians)
+        mu = mu.view(mu.shape[0], mu.shape[1], self.n_gaussians, self.latent_dim)
+        sigma = sigma.view(sigma.shape[0], sigma.shape[1], self.n_gaussians, self.latent_dim)
         return pi, mu, sigma
 
 class MemoryModel(nn.Module):
