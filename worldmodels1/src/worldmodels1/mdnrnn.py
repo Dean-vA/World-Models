@@ -35,19 +35,19 @@ class MDN(nn.Module):
         return pi, mu, sigma
 
 class MemoryModel(nn.Module):
-    def __init__(self, n_input, n_hidden, n_gaussians, latent_dim):
+    def __init__(self, n_input, n_hidden=256, n_gaussians=5, latent_dim=32):
         super(MemoryModel, self).__init__()
         self.lstm = nn.LSTM(n_input, n_hidden, batch_first=True)
         self.mdn = MDN(n_hidden, n_gaussians, latent_dim)
         self.first = True
 
-    def forward(self, x):
+    def forward(self, x, hidden=None):
         if self.first:
             print(f'input shape: {x.shape}')
             self.first = False
-        lstm_out, _ = self.lstm(x)
+        lstm_out, hidden = self.lstm(x, hidden)
         pi, mu, sigma = self.mdn(lstm_out)
-        return pi, mu, sigma
+        return pi, mu, sigma, hidden
 
 def mdn_loss(y, pi, mu, sigma):
     # Expand dimensions of y to match the shape of the Gaussian parameters
