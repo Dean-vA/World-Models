@@ -22,7 +22,7 @@ parser.add_argument('--lr', type=float, default=0.001, help='Learning rate')
 parser.add_argument('--n_hidden', type=int, default=256, help='Number of hidden units in LSTM')
 parser.add_argument('--n_gaussians', type=int, default=5, help='Number of Gaussians in MDN')
 parser.add_argument('--data_path', type=str, help='Path to the training data')
-parser.add_argument('--save_path', type=str, default='./memory_model.pth', help='Where to save the model')
+parser.add_argument('--save_path', type=str, default='memory_model.pth', help='Where to save the model')
 parser.add_argument('--seq_len', type=int, default=999, help='Sequence length for LSTM input')  # Added seq_len argument
 parser.add_argument('--latent_dim', type=int, default=32, help='Latent dimension of VAE')  # Added latent_dim argument
 parser.add_argument('--action_dim', type=int, default=3, help='Action dimension')  # Added action_dim argument
