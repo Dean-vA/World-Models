@@ -18,7 +18,7 @@ class MDN(nn.Module):
         pi = nn.Softmax(dim=1)(pi)
         sigma = torch.exp(sigma)
         if self.first:
-            print(f'x shape: {x.shape}')
+            print(f'lstm output/mdn input shape: {x.shape}')
             print(f'z_h shape: {z_h.shape}')
             print(f'pi shape: {pi.shape}')
             print(f'mu shape: {mu.shape}')
