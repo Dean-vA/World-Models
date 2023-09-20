@@ -8,6 +8,9 @@ from mdnrnn import MemoryModel, mdn_loss  # Import MemoryModel from mdnrnn.py
 import numpy as np
 import logging
 from tqdm import tqdm
+import matplotlib
+matplotlib.use('Agg')  # For headless servers
+import matplotlib.pyplot as plt
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -46,27 +49,48 @@ if __name__ == '__main__':
     dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
     logging.info('Dataset and dataloader initialized')
 
-    best_loss = np.inf
-    for epoch in tqdm(range(args.epochs), desc='Epochs'):  # Wrap the epoch loop with tqdm
-        batch_tqdm = tqdm(dataloader, desc=f'Epoch {epoch + 1}', leave=False)  # Create a tqdm object for the dataloader loop
-        for i, batch in enumerate(batch_tqdm):  
-            # Zero the gradients
-            optimizer.zero_grad()
+best_loss = np.inf
+# Initialize empty list to hold loss values
+loss_values = []
+for epoch in tqdm(range(args.epochs), desc='Epochs'):  # Wrap the epoch loop with tqdm
+    batch_tqdm = tqdm(dataloader, desc=f'Epoch {epoch + 1}', leave=False)  # Create a tqdm object for the dataloader loop
+    starting_loss = None  # To hold the starting loss value for each epoch
+    for i, batch in enumerate(batch_tqdm):  
+        # Zero the gradients
+        optimizer.zero_grad()
 
-            # Forward pass
-            pi, mu, sigma = model(batch[0].to(device))  # [0] is the input sequence from the dataset
-            if i == 0:
-                logging.info(f'pi shape: {pi.shape}, mu shape: {mu.shape}, sigma shape: {sigma.shape}, y shape: {batch[1].shape}')
-            # Compute loss
-            loss = mdn_loss(batch[1].to(device), pi, mu, sigma)  # [1] is the target sequence from the dataset
+        # Forward pass
+        pi, mu, sigma = model(batch[0].to(device))  # [0] is the input sequence from the dataset
+        if i == 0:
+            logging.info(f'pi shape: {pi.shape}, mu shape: {mu.shape}, sigma shape: {sigma.shape}, y shape: {batch[1].shape}')
+        
+        # Compute loss
+        loss = mdn_loss(batch[1].to(device), pi, mu, sigma)  # [1] is the target sequence from the dataset, loss here is averaged over the batch
 
-            # Backward pass and optimization
-            loss.backward()
-            optimizer.step()
+        # Record the starting loss for this epoch, if it's the first iteration
+        if starting_loss is None:
+            starting_loss = loss.item()
+        # Record the loss for this batch
+        loss_values.append(loss.item())
 
-            # Update tqdm
-            if i % 10 == 0:  # Update every 10 batches
-                batch_tqdm.set_postfix({"Loss": f"{loss.item():.4f}"})
+        # Record the best loss so far, if it's lower than the previous best loss
+        if loss.item() < best_loss:
+            best_loss = loss.item()
+
+        # Backward pass and optimization
+        loss.backward()
+        optimizer.step()
+
+        # Update tqdm
+        if i % 10 == 0:  # Update every 10 batches
+            batch_tqdm.set_postfix({"Starting Loss": f"{starting_loss:.4f}", "Best Loss": f"{best_loss:.4f}", "Current Loss": f"{loss.item():.4f}"})
+    
+    # Plotting the loss values
+    plt.plot(loss_values)
+    plt.xlabel('Batch Number')
+    plt.ylabel('Loss')
+    plt.title('Loss per Batch')
+    plt.savefig('loss_per_batch.png')  # This saves the figure to the current working directory
 
     # Save the model if it has the best loss
     if loss.item() < best_loss:
