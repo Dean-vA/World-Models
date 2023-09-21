@@ -49,53 +49,53 @@ if __name__ == '__main__':
     dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
     logging.info('Dataset and dataloader initialized')
 
-best_loss_epoch = np.inf
-# Initialize empty list to hold loss values
-loss_values = []
-for epoch in tqdm(range(args.epochs), desc='Epochs'):  # Wrap the epoch loop with tqdm
-    batch_tqdm = tqdm(dataloader, desc=f'Epoch {epoch + 1}', leave=False)  # Create a tqdm object for the dataloader loop
-    starting_loss = None  # To hold the starting loss value for each epoch
-    best_loss = np.inf  # To hold the best loss value for each epoch
-    for i, batch in enumerate(batch_tqdm):  
-        # Zero the gradients
-        optimizer.zero_grad()
+    best_loss_epoch = np.inf
+    # Initialize empty list to hold loss values
+    loss_values = []
+    for epoch in tqdm(range(args.epochs), desc='Epochs'):  # Wrap the epoch loop with tqdm
+        batch_tqdm = tqdm(dataloader, desc=f'Epoch {epoch + 1}', leave=False)  # Create a tqdm object for the dataloader loop
+        starting_loss = None  # To hold the starting loss value for each epoch
+        best_loss = np.inf  # To hold the best loss value for each epoch
+        for i, batch in enumerate(batch_tqdm):  
+            # Zero the gradients
+            optimizer.zero_grad()
 
-        # Forward pass
-        pi, mu, sigma = model(batch[0].to(device))  # [0] is the input sequence from the dataset
-        if i == 0:
-            logging.info(f'pi shape: {pi.shape}, mu shape: {mu.shape}, sigma shape: {sigma.shape}, y shape: {batch[1].shape}')
-        
-        # Compute loss
-        loss = mdn_loss(batch[1].to(device), pi, mu, sigma)  # [1] is the target sequence from the dataset, loss here is averaged over the batch
+            # Forward pass
+            pi, mu, sigma = model(batch[0].to(device))  # [0] is the input sequence from the dataset
+            if i == 0:
+                logging.info(f'pi shape: {pi.shape}, mu shape: {mu.shape}, sigma shape: {sigma.shape}, y shape: {batch[1].shape}')
+            
+            # Compute loss
+            loss = mdn_loss(batch[1].to(device), pi, mu, sigma)  # [1] is the target sequence from the dataset, loss here is averaged over the batch
 
-        # Record the starting loss for this epoch, if it's the first iteration
-        if starting_loss is None:
-            starting_loss = loss.item()
-        # Record the loss for this batch
-        loss_values.append(loss.item())
+            # Record the starting loss for this epoch, if it's the first iteration
+            if starting_loss is None:
+                starting_loss = loss.item()
+            # Record the loss for this batch
+            loss_values.append(loss.item())
 
-        # Record the best loss so far, if it's lower than the previous best loss
-        if loss.item() < best_loss:
-            best_loss = loss.item()
+            # Record the best loss so far, if it's lower than the previous best loss
+            if loss.item() < best_loss:
+                best_loss = loss.item()
 
-        # Backward pass and optimization
-        loss.backward()
-        optimizer.step()
+            # Backward pass and optimization
+            loss.backward()
+            optimizer.step()
 
-        # Update tqdm
-        if i % 10 == 0:  # Update every 10 batches
-            batch_tqdm.set_postfix({"Starting Loss": f"{starting_loss:.4f}", "Best Loss": f"{best_loss:.4f}", "Current Loss": f"{loss.item():.4f}"})  
+            # Update tqdm
+            if i % 10 == 0:  # Update every 10 batches
+                batch_tqdm.set_postfix({"Starting Loss": f"{starting_loss:.4f}", "Best Loss": f"{best_loss:.4f}", "Current Loss": f"{loss.item():.4f}"})  
 
-        if i % 10000 == 0: # Save the plot every 100 batches
-            # Plotting the loss values
-            plt.plot(loss_values)
-            plt.xlabel('Batch Number')
-            plt.ylabel('Loss')
-            plt.title('Loss per Batch')
-            plt.savefig('loss_per_batch.png')  # This saves the figure to the current working directory
+            if i % 10000 == 0: # Save the plot every 100 batches
+                # Plotting the loss values
+                plt.plot(loss_values)
+                plt.xlabel('Batch Number')
+                plt.ylabel('Loss')
+                plt.title('Loss per Batch')
+                plt.savefig('loss_per_batch.png')  # This saves the figure to the current working directory
 
-    # Save the model if it has the best loss
-    if loss.item() < best_loss_epoch:
-        best_loss_epoch = loss.item()
-        torch.save(model.state_dict(), args.save_path)
-        logging.info(f'Model saved to {args.save_path}, previous best loss: {best_loss:.4f}, current best loss: {loss.item():.4f}')
+        # Save the model if it has the best loss
+        if loss.item() < best_loss_epoch:
+            best_loss_epoch = loss.item()
+            torch.save(model.state_dict(), args.save_path)
+            logging.info(f'Model saved to {args.save_path}, previous best loss: {best_loss:.4f}, current best loss: {loss.item():.4f}')
