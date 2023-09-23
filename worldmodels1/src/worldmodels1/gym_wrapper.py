@@ -62,18 +62,13 @@ class CarRacingWrapper(gym.Wrapper):
         return obs, reward, done, trunc, info
 
     def process_obs(self, obs, action):
-        # obs is 96x96x3 need to convert to 64x64x1. Use PIL resize
-        obs = Image.fromarray(obs)
-        obs = obs.resize((64, 64)) # [64, 64, 3]
-        # make grayscale
-        obs = obs.convert('L') # [64, 64]
-        obs = np.array(obs)
-        obs = np.expand_dims(obs, axis=2) # [64, 64] -> [64, 64, 1] : add channel dimension
-        obs = np.expand_dims(obs, axis=0) # [64, 64, 3] -> [1, 64, 64, 3] : add batch dimension
-        obs = obs / 255.0 # Normalize
-        obs = obs.transpose(0, 3, 1, 2) # [1, 64, 64, 3] -> [1, 3, 64, 64] : swap channel dimension for 
-        #print(f'obs shape: {obs.shape}')
-        obs = torch.from_numpy(obs).float().to(self.device)
+        # obs is 96x96x3 need to convert to 64x64x1. 
+        # Convert to PyTorch tensor and normalize and permute dimensions and transfer to device
+        obs = torch.from_numpy(obs).permute(2, 0, 1).float().to(self.device) / 255.0  
+        # Rescale and average color channels
+        obs = torch.nn.functional.interpolate(obs.unsqueeze(0), size=(64, 64), mode='bilinear', align_corners=False)
+        obs = obs.mean(dim=1, keepdim=True)  # Reduce color channels by taking the mean
+
         with torch.no_grad():
             #print(f'obs shape: {obs.shape}')
             mu, logvar = self.vae.encode(obs)
