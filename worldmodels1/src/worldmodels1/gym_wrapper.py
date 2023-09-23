@@ -1,0 +1,92 @@
+# Awrapper for the car racing gym environment that preprocesses the input and returns the latent state of the vision model and hidden state of the memory model
+import gymnasium as gym
+from gymnasium import spaces
+import numpy as np
+from cnnvae import VAE
+from mdnrnn import MemoryModel
+import torch
+from PIL import Image
+
+class CarRacingWrapper(gym.Wrapper):
+    def __init__(self, env, device='cpu'):
+        super(CarRacingWrapper, self).__init__(env)
+        # define observation space as vector of size 32 + 256
+        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(32+256,), dtype=np.float32)
+        # check for cuda
+        self.device = device
+        if torch.cuda.is_available():
+            self.vae = self.vae.cuda()
+            self.rnn = self.rnn.cuda()
+            self.device = 'cuda'
+
+        self.vae = VAE()
+        # Load the state_dict into CPU memory
+        state_dict = torch.load('worldmodels1/vae2.pth', map_location='cpu')
+        # Remove 'module.' prefix from state_dict keys
+        new_state_dict = {k.replace("module.", ""): v for k, v in state_dict.items()}
+        # Load the modified state_dict into the model
+        self.vae.load_state_dict(new_state_dict)
+        self.vae.eval()
+        self.vae.to(device)
+
+        self.rnn = MemoryModel(n_input=32+3, n_hidden=256, n_gaussians=5, latent_dim=32)
+        # load pretrained weights
+        state_dict = torch.load('worldmodels1/src/worldmodels1/memory_model.pth', map_location='cpu')
+        # Remove 'module.' prefix from state_dict keys
+        new_state_dict = {k.replace("module.", ""): v for k, v in state_dict.items()}
+        self.rnn.load_state_dict(new_state_dict)
+
+
+    def reset(self, **kwargs):
+        obs, _ = self.env.reset(**kwargs)
+        #print("Shape of observation returned by reset:", obs.shape)
+        self.hidden = (torch.zeros((1, 1, self.rnn.n_hidden)).to(self.device), 
+               torch.zeros((1, 1, self.rnn.n_hidden)).to(self.device))
+        # action should be a 1x3 tensor
+        obs = self.process_obs(obs, torch.zeros((1, 3)))
+        return obs, _
+
+    def step(self, action):
+        obs, reward, done, trunc, info = self.env.step(action)
+        obs = self.process_obs(obs, action)
+
+        return obs, reward, done, trunc, info
+
+    def process_obs(self, obs, action):
+        # obs is 96x96x3 need to convert to 64x64x1. Use PIL resize
+        obs = Image.fromarray(obs)
+        obs = obs.resize((64, 64)) # [64, 64, 3]
+        # make grayscale
+        obs = obs.convert('L') # [64, 64]
+        obs = np.array(obs)
+        obs = np.expand_dims(obs, axis=2) # [64, 64] -> [64, 64, 1] : add channel dimension
+        obs = np.expand_dims(obs, axis=0) # [64, 64, 3] -> [1, 64, 64, 3] : add batch dimension
+        obs = obs / 255.0 # Normalize
+        obs = obs.transpose(0, 3, 1, 2) # [1, 64, 64, 3] -> [1, 3, 64, 64] : swap channel dimension for 
+        #print(f'obs shape: {obs.shape}')
+        obs = torch.from_numpy(obs).float().to(self.device)
+        with torch.no_grad():
+            #print(f'obs shape: {obs.shape}')
+            mu, logvar = self.vae.encode(obs)
+            z_t = self.vae.reparameterize(mu, logvar)
+            #print(f'z_t shape: {z_t.shape}')
+            # check if action is a tensor
+            if not torch.is_tensor(action):
+                action = torch.tensor(action).float().to(self.device).unsqueeze(0)
+            rnn_in = torch.cat((z_t, action), dim=1).unsqueeze(0)
+            #print(f"obs shape: {obs.shape}")
+            #print(f"action shape: {action.shape}")
+            #print(f"rnn_in shape: {rnn_in.shape}")
+            #print(f"Initial hidden states shapes: {self.hidden[0].shape}, {self.hidden[1].shape}")
+            _, _, _, self.hidden = self.rnn(rnn_in, self.hidden)
+            # extract hidden state
+            h_t = self.hidden[0]
+            #print(f"Final hidden states shapes: {self.hidden[0].shape}, {self.hidden[1].shape}")
+            #print(f"h_t shape: {h_t.shape}")
+            #print(f"z_t shape: {z_t.shape}")
+            # concat z_t and hidden
+            z_t = z_t.squeeze(0) # remove batch dimension
+            h_t = h_t.squeeze(0).squeeze(0) # remove batch and sequence dimensions
+            obs = torch.cat((z_t, h_t))
+            #print(f"obs shape: {obs.shape}")
+        return obs

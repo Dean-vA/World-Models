@@ -37,6 +37,9 @@ class MDN(nn.Module):
 class MemoryModel(nn.Module):
     def __init__(self, n_input, n_hidden=256, n_gaussians=5, latent_dim=32):
         super(MemoryModel, self).__init__()
+        self.n_hidden = n_hidden
+        self.n_gaussians = n_gaussians
+        self.latent_dim = latent_dim
         self.lstm = nn.LSTM(n_input, n_hidden, batch_first=True)
         self.mdn = MDN(n_hidden, n_gaussians, latent_dim)
         self.first = True

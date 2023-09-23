@@ -25,7 +25,11 @@ class VAE(nn.Module):
         x = torch.relu(self.enc_conv1(x))
         x = torch.relu(self.enc_conv2(x))
         x = torch.relu(self.enc_conv3(x))
-        x = x.view(x.size(0), -1)
+        # view is more efficient so try this first if it fails use reshape
+        try:
+            x = x.view(x.size(0), -1)
+        except:
+            x = x.reshape(x.size(0), -1)
         x = torch.relu(self.enc_fc1(x))
         return self.enc_fc2_mean(x), self.enc_fc2_logvar(x)
 
