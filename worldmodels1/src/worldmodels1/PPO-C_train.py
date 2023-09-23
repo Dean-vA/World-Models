@@ -15,4 +15,8 @@ model = PPO("MlpPolicy", wrapped_env, verbose=2)
 for i in range(100):
     model.learn(total_timesteps=20000, reset_num_timesteps=False)
     model.save("ppo_car_racing_{}".format(i))
+    print("Saved model checkpoint to {}".format("ppo_car_racing_{}".format(i)))
+    # get best reward
+    best_reward = model.best_reward
+    print("Best reward: {}".format(best_reward))
 

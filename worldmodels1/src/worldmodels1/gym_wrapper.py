@@ -36,6 +36,8 @@ class CarRacingWrapper(gym.Wrapper):
             self.vae = self.vae.cuda()
             self.rnn = self.rnn.cuda()
             self.device = 'cuda'
+        
+        print(f"Using device: {self.device}")
 
 
     def reset(self, **kwargs):
