@@ -12,12 +12,6 @@ class CarRacingWrapper(gym.Wrapper):
         super(CarRacingWrapper, self).__init__(env)
         # define observation space as vector of size 32 + 256
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(32+256,), dtype=np.float32)
-        # check for cuda
-        self.device = device
-        if torch.cuda.is_available():
-            self.vae = self.vae.cuda()
-            self.rnn = self.rnn.cuda()
-            self.device = 'cuda'
 
         self.vae = VAE()
         # Load the state_dict into CPU memory
@@ -27,7 +21,6 @@ class CarRacingWrapper(gym.Wrapper):
         # Load the modified state_dict into the model
         self.vae.load_state_dict(new_state_dict)
         self.vae.eval()
-        self.vae.to(device)
 
         self.rnn = MemoryModel(n_input=32+3, n_hidden=256, n_gaussians=5, latent_dim=32)
         # load pretrained weights
@@ -35,6 +28,14 @@ class CarRacingWrapper(gym.Wrapper):
         # Remove 'module.' prefix from state_dict keys
         new_state_dict = {k.replace("module.", ""): v for k, v in state_dict.items()}
         self.rnn.load_state_dict(new_state_dict)
+        self.rnn.eval()
+
+        # check for cuda
+        self.device = device
+        if torch.cuda.is_available():
+            self.vae = self.vae.cuda()
+            self.rnn = self.rnn.cuda()
+            self.device = 'cuda'
 
 
     def reset(self, **kwargs):
