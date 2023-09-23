@@ -46,12 +46,17 @@ class CarRacingWrapper(gym.Wrapper):
         # action should be a 1x3 tensor
         action = torch.zeros((1, 3)).to(self.device)
         obs = self.process_obs(obs, action)
+        # if obs is a tensor, convert to numpy array
+        if torch.is_tensor(obs):
+            obs = obs.cpu().numpy()
         return obs, _
 
     def step(self, action):
         obs, reward, done, trunc, info = self.env.step(action)
         obs = self.process_obs(obs, action)
-
+        # if obs is a tensor, convert to numpy array
+        if torch.is_tensor(obs):
+            obs = obs.cpu().numpy()
         return obs, reward, done, trunc, info
 
     def process_obs(self, obs, action):
