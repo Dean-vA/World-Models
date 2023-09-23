@@ -44,7 +44,8 @@ class CarRacingWrapper(gym.Wrapper):
         self.hidden = (torch.zeros((1, 1, self.rnn.n_hidden)).to(self.device), 
                torch.zeros((1, 1, self.rnn.n_hidden)).to(self.device))
         # action should be a 1x3 tensor
-        obs = self.process_obs(obs, torch.zeros((1, 3)))
+        action = torch.zeros((1, 3)).to(self.device)
+        obs = self.process_obs(obs, action)
         return obs, _
 
     def step(self, action):
