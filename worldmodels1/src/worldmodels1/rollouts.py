@@ -24,31 +24,31 @@ def preprocess_state(state, img_size=64, gray_scale=False):
 # a function to process the observation for the provided controller if any
 def process_obs(obs, action, vae, rnn, hidden, device='cpu'):
     # obs is 96x96x3 need to convert to 64x64x1. 
-    # Convert to PyTorch tensor and normalize and permute dimensions and transfer to device
+    # Convert to PyTorch tensor and normalize and permute dimensions and transfer to 
     obs = torch.from_numpy(obs).permute(2, 0, 1).float().to(device) / 255.0  
     # Rescale and average color channels
     obs = torch.nn.functional.interpolate(obs.unsqueeze(0), size=(64, 64), mode='bilinear', align_corners=False)
     obs = obs.mean(dim=1, keepdim=True)  # Reduce color channels by taking the mean
 
     with torch.no_grad():
-        #print(f'obs shape: {obs.shape}')
+        logging.info(f'obs shape: {obs.shape}')
         mu, logvar = vae.encode(obs)
         z_t = vae.reparameterize(mu, logvar)
-        #print(f'z_t shape: {z_t.shape}')
+        logging.info(f'z_t shape: {z_t.shape}')
         # check if action is a tensor
         if not torch.is_tensor(action):
             action = torch.tensor(action).float().to(device).unsqueeze(0)
         rnn_in = torch.cat((z_t, action), dim=1).unsqueeze(0)
-        #print(f"obs shape: {obs.shape}")
-        #print(f"action shape: {action.shape}")
-        #print(f"rnn_in shape: {rnn_in.shape}")
-        #print(f"Initial hidden states shapes: {self.hidden[0].shape}, {self.hidden[1].shape}")
+        logging.info(f"obs shape: {obs.shape}")
+        logging.info(f"action shape: {action.shape}")
+        logging.info(f"rnn_in shape: {rnn_in.shape}")
+        logging.info(f"Initial hidden states shapes: {hidden[0].shape}, {hidden[1].shape}")
         _, _, _, hidden = rnn(rnn_in, hidden)
         # extract hidden state
         h_t = hidden[0]
-        #print(f"Final hidden states shapes: {self.hidden[0].shape}, {self.hidden[1].shape}")
-        #print(f"h_t shape: {h_t.shape}")
-        #print(f"z_t shape: {z_t.shape}")
+        logging.info(f"Final hidden states shapes: {hidden[0].shape}, {hidden[1].shape}")
+        logging.info(f"h_t shape: {h_t.shape}")
+        logging.info(f"z_t shape: {z_t.shape}")
         # concat z_t and hidden
         z_t = z_t.squeeze(0) # remove batch dimension
         h_t = h_t.squeeze(0).squeeze(0) # remove batch and sequence dimensions
@@ -70,7 +70,8 @@ def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=
         logging.info(f"Worker {worker_id}: Starting episode {episode + 1}/{num_episodes}.")
         print(f"Worker {worker_id}: Starting episode {episode + 1}/{num_episodes}.")
         state = env.reset()[0]
-        state = preprocess_state(state, img_size=img_size, gray_scale=gray_scale)
+        if worldmodel is None:
+            state = preprocess_state(state, img_size=img_size, gray_scale=gray_scale)
         print(f'Worker {worker_id}: 1st state shape: {state.shape}, data type: {state.dtype}')
         done = False
         episode_data = []
@@ -78,9 +79,10 @@ def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=
 
         # Initialize the controller initial hidden state and action if provided
         if worldmodel is not None:
-            hidden = (torch.zeros((1, 1, controller['rnn'].n_hidden)), 
-                      torch.zeros((1, 1, controller['rnn'].n_hidden)))
+            hidden = (torch.zeros((1, 1, worldmodel['rnn'].n_hidden)), 
+                      torch.zeros((1, 1, worldmodel['rnn'].n_hidden)))
             action = torch.zeros((1, 3))
+            controller = PPO.load(worldmodel['controller_path'])
 
         while not done and step_count < max_steps:
             # Sample a random action from the environment's action space if no controller is provided
@@ -88,7 +90,7 @@ def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=
                 action = env.action_space.sample()
             else:
                 obs = process_obs(state, action, worldmodel['vae'], worldmodel['rnn'], hidden)
-                action, _ = worldmodel['controller'].predict(obs)
+                action, _ = controller.predict(obs)
 
             next_state, reward, done, truncated, info = env.step(action)
             episode_data.append((state, action, reward, done, episode, step_count)) #Step count and episode number to help with debugging
@@ -123,6 +125,7 @@ if __name__ == "__main__":
     parser.add_argument("--controller_path", default="", type=str, help="Path to the trained controller model")
     args = parser.parse_args()
 
+
     worldmodel = None
     if args.use_controller:
         latent_dim = 32
@@ -151,9 +154,9 @@ if __name__ == "__main__":
         rnn.load_state_dict(new_state_dict)
         rnn.eval()
         
-        controller = PPO.load(args.controller_path)  # Use the specified path
+        controller_path = args.controller_path
         
-        worldmodel = {'vae': vae, 'rnn': rnn, 'model': controller}
+        worldmodel = {'vae': vae, 'rnn': rnn, 'controller_path': controller_path}
     
     logging.info(f"Starting data collection for {args.episodes * args.workers} episodes.")
     with Pool(args.workers) as p:
