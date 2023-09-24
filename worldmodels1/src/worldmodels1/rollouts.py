@@ -123,6 +123,7 @@ if __name__ == "__main__":
     parser.add_argument("--controller_path", default="", type=str, help="Path to the trained controller model")
     args = parser.parse_args()
 
+    worldmodel = None
     if args.use_controller:
         latent_dim = 32
         action_dim = 3
@@ -134,7 +135,7 @@ if __name__ == "__main__":
         
         vae = VAE()
         # Load the state_dict into CPU memory
-        state_dict = torch.load('./../vae2.pth', map_location='cpu')
+        state_dict = torch.load('vae2.pth', map_location='cpu')
         # Remove 'module.' prefix from state_dict keys
         new_state_dict = {k.replace("module.", ""): v for k, v in state_dict.items()}
         # Load the modified state_dict into the model
@@ -143,7 +144,7 @@ if __name__ == "__main__":
         
         rnn = MemoryModel(n_input=latent_dim+action_dim, n_hidden=256, n_gaussians=5, latent_dim=latent_dim)
         # Load the state_dict into CPU memory
-        state_dict = torch.load('./../src/worldmodels1/memory_model.pth', map_location='cpu')
+        state_dict = torch.load('src/worldmodels1/memory_model.pth', map_location='cpu')
         # Remove 'module.' prefix from state_dict keys
         new_state_dict = {k.replace("module.", ""): v for k, v in state_dict.items()}
         # Load the modified state_dict into the model
