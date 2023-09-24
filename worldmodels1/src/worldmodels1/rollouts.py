@@ -86,6 +86,7 @@ def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=
 
         while not done and step_count < max_steps:
             logging.info(f"Worker {worker_id}: Starting step {step_count + 1}/{max_steps}.")
+            print(f"Worker {worker_id}: Starting step {step_count + 1}/{max_steps}.")
             # Sample a random action from the environment's action space if no controller is provided
             if worldmodel is None:
                 action = env.action_space.sample()
