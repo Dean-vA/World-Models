@@ -79,10 +79,14 @@ def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=
 
         # Initialize the controller initial hidden state and action if provided
         if worldmodel is not None:
+            print(f'Worker {worker_id}: initializing controller')
             hidden = (torch.zeros((1, 1, worldmodel['rnn'].n_hidden)), 
                       torch.zeros((1, 1, worldmodel['rnn'].n_hidden)))
+            print(f'Worker {worker_id}: initializing action')
             action = torch.zeros((1, 3))
+            print(f'Worker {worker_id}: loading controller')
             controller = PPO.load(worldmodel['controller_path'])
+            print(f'Worker {worker_id}: controller loaded')
 
         while not done and step_count < max_steps:
             logging.info(f"Worker {worker_id}: Starting step {step_count + 1}/{max_steps}.")
