@@ -1,5 +1,14 @@
+# get data
+python src/worldmodels1/rollouts.py --workers 250 --episodes 40 --max_steps 1000 --seed 42 --img_size 64 --gray_scale
+
 #vae_train.py - multi-gpu training
 CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.run --nproc_per_node 4 src/worldmodels1/train_vae.py --data_path collected_data.npy --num_workers 50 --epochs 50
 
 #create_latent_data.py - single gpu
 CUDA_VISIBLE_DEVICES=0 python create_latent_data.py --data_path ./../../collected_data.npy --batch_size 1000 --num_workers 0 --vae_path ./../../vae2.pth
+
+# train memory model
+python train_rnn.py --data_path latent_action_pairs.npy --seq_len 999
+
+# train controller
+
