@@ -85,7 +85,7 @@ def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=
             print(f'Worker {worker_id}: initializing action')
             action = torch.zeros((1, 3))
             print(f'Worker {worker_id}: loading controller')
-            controller = PPO.load(worldmodel['controller_path'])
+            controller = PPO.load('../ppo_car_racing_61.zip')#worldmodel['controller_path'])
             print(f'Worker {worker_id}: controller loaded')
 
         while not done and step_count < max_steps:
