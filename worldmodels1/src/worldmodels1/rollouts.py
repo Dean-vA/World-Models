@@ -148,6 +148,12 @@ if __name__ == "__main__":
     parser.add_argument("--use_controller", action="store_true", default=False, help="Use trained controller for rollouts")
     parser.add_argument("--controller_path", default="", type=str, help="Path to the trained controller model")
     args = parser.parse_args()
+    
+    #check mulitprocessing start method, if not spawn, set it to spawn
+    # if sys.platform != 'win32':
+    #     if not 'spawn' in get_start_method(allow_none=True):
+    #         set_start_method('spawn')
+    print(f"Using start method: {get_start_method(allow_none=True)}")
 
     #worldmodel = None
     shared_models = None
@@ -188,13 +194,6 @@ if __name__ == "__main__":
         #worldmodel = {'vae': vae, 'rnn': rnn, 'controller_path': controller_path}
         shared_models['vae'] = vae
         shared_models['rnn'] = rnn
-
-    #check mulitprocessing start method, if not spawn, set it to spawn
-    # if sys.platform != 'win32':
-    #     if not 'spawn' in get_start_method(allow_none=True):
-    set_start_method('spawn')
-    print(f"Using start method: {get_start_method(allow_none=True)}")
-
 
     logging.info(f"Starting data collection for {args.episodes * args.workers} episodes.")
     with Pool(args.workers) as p:
