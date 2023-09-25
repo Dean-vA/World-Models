@@ -56,7 +56,7 @@ def process_obs(obs, action, vae, rnn, hidden, device='cpu'):
     return obs
 
 
-def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=64, gray_scale=False, controller_path=None, shared_models=None):#worldmodel=None):
+def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=64, gray_scale=False, device='cpu', controller_path=None, shared_models=None):#worldmodel=None):
     vae = shared_models.get('vae')
     rnn = shared_models.get('rnn')
     #vae = worldmodel['vae']
@@ -114,7 +114,7 @@ def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=
             #if worldmodel is None:
                 action = env.action_space.sample()
             else:
-                obs = process_obs(state, action, vae, rnn, hidden)
+                obs = process_obs(state, action, vae, rnn, hidden, device=device)
                 action, _ = controller.predict(obs)
 
             next_state, reward, done, truncated, info = env.step(action)
@@ -149,6 +149,7 @@ if __name__ == "__main__":
     parser.add_argument("--output_path", default="collected_data.npy", type=str, help="Path to save the collected data")
     parser.add_argument("--use_controller", action="store_true", default=False, help="Use trained controller for rollouts")
     parser.add_argument("--controller_path", default="", type=str, help="Path to the trained controller model")
+    parser.add_argument("--device", default="cpu", type=str, help="Device to use for processing")
     args = parser.parse_args()
 
     #check mulitprocessing start method, if not spawn, set it to spawn
@@ -202,7 +203,7 @@ if __name__ == "__main__":
         results = p.starmap(
             collect_data, 
             #[(args.env, args.episodes, args.max_steps, args.seed, args.img_size, args.gray_scale, worldmodel) for _ in range(args.workers)]
-            [(args.env, args.episodes, args.max_steps, args.seed, args.img_size, args.gray_scale, controller_path, shared_models) for _ in range(args.workers)]
+            [(args.env, args.episodes, args.max_steps, args.seed, args.img_size, args.gray_scale, args.device, controller_path, shared_models) for _ in range(args.workers)]
         )
 
     collected_data = [item for sublist in results for item in sublist]
