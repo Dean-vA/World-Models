@@ -189,9 +189,10 @@ if __name__ == "__main__":
         shared_models['vae'] = vae
         shared_models['rnn'] = rnn
 
-    #set multiprocessing start method to spawn if this is a unix system
+    #check mulitprocessing start method, if not spawn, set it to spawn
     if sys.platform != 'win32':
-        set_start_method('spawn')
+        if not 'spawn' in multiprocessing.get_start_method(allow_none=True):
+            multiprocessing.set_start_method('spawn')
 
     logging.info(f"Starting data collection for {args.episodes * args.workers} episodes.")
     with Pool(args.workers) as p:
