@@ -1,7 +1,7 @@
 import gym
 import numpy as np
 import argparse
-from multiprocessing import Pool, current_process
+from multiprocessing import Pool, current_process, set_start_method
 import logging
 from PIL import Image
 import torch
@@ -153,7 +153,7 @@ if __name__ == "__main__":
         vae.load_state_dict(new_state_dict)
         vae.eval()
         
-        rnn = MemoryModel(n_input=latent_dim+action_dim, n_hidden=256, n_gaussians=5, latent_dim=latent_dim)
+        rnn = MemoryModel(n_input=latent_dim+action_dim, n_hidden=256, n_gaussians=5, latent_dim=latent_dim)        
         # Load the state_dict into CPU memory
         state_dict = torch.load('src/worldmodels1/memory_model.pth', map_location='cpu')
         # Remove 'module.' prefix from state_dict keys
@@ -166,6 +166,9 @@ if __name__ == "__main__":
         
         worldmodel = {'vae': vae, 'rnn': rnn, 'controller_path': controller_path}
     
+    #set multiprocessing start method to spawn
+    set_start_method('spawn')
+
     logging.info(f"Starting data collection for {args.episodes * args.workers} episodes.")
     with Pool(args.workers) as p:
         results = p.starmap(
