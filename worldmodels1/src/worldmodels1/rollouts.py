@@ -6,8 +6,7 @@ import logging
 from PIL import Image
 import torch
 from stable_baselines3 import PPO
-
-
+import time
 
 def preprocess_state(state, img_size=64, gray_scale=False):
     # Convert the NumPy array to a PIL image
@@ -90,8 +89,12 @@ def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=
             controller = PPO.load(worldmodel['controller_path'], device='cpu', verbose=1)  
             print(f'Worker {worker_id}: controller loaded')
 
+        start_time = time.time()
         while not done and step_count < max_steps:
             #logging.info(f"Worker {worker_id}: Starting step {step_count + 1}/{max_steps}.")
+            # print every 100 steps with the episode number and step count and average time per step
+            if step_count % 100 == 0:
+                print(f"Worker {worker_id}: Starting step {step_count + 1}/{max_steps}, episode {episode + 1}/{num_episodes}, average time per step: {step_count / (time.time() - start_time)} steps per second.")
             print(f"Worker {worker_id}: Starting step {step_count + 1}/{max_steps}.")
             # Sample a random action from the environment's action space if no controller is provided
             if worldmodel is None:
