@@ -192,7 +192,7 @@ if __name__ == "__main__":
     #check mulitprocessing start method, if not spawn, set it to spawn
     if sys.platform != 'win32':
         if not 'spawn' in get_start_method(allow_none=True):
-            set_start_method('spawn')
+            #set_start_method('spawn')
 
     logging.info(f"Starting data collection for {args.episodes * args.workers} episodes.")
     with Pool(args.workers) as p:
