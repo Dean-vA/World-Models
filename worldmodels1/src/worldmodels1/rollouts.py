@@ -148,11 +148,11 @@ if __name__ == "__main__":
     parser.add_argument("--use_controller", action="store_true", default=False, help="Use trained controller for rollouts")
     parser.add_argument("--controller_path", default="", type=str, help="Path to the trained controller model")
     args = parser.parse_args()
-    
+
     #check mulitprocessing start method, if not spawn, set it to spawn
     # if sys.platform != 'win32':
     #     if not 'spawn' in get_start_method(allow_none=True):
-    #         set_start_method('spawn')
+    set_start_method('spawn')
     print(f"Using start method: {get_start_method(allow_none=True)}")
 
     #worldmodel = None
