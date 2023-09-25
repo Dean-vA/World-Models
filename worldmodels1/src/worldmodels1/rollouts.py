@@ -1,12 +1,13 @@
 import gym
 import numpy as np
 import argparse
-from multiprocessing import Pool, current_process, set_start_method
+from multiprocessing import Pool, current_process, set_start_method, Manager
 import logging
 from PIL import Image
 import torch
 from stable_baselines3 import PPO
 import time
+import sys
 
 def preprocess_state(state, img_size=64, gray_scale=False):
     # Convert the NumPy array to a PIL image
@@ -56,7 +57,11 @@ def process_obs(obs, action, vae, rnn, hidden, device='cpu'):
     return obs
 
 
-def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=64, gray_scale=False, worldmodel=None):
+def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=64, gray_scale=False, controller_path=None, shared_models=None):#worldmodel=None):
+    vae = shared_models.get('vae')
+    rnn = shared_models.get('rnn')
+    #vae = worldmodel['vae']
+    #rnn = worldmodel['rnn']
     # print device that is being used by torch
     print(f"Using device: {torch.device('cuda' if torch.cuda.is_available() else 'cpu')}")
     worker_id = current_process()._identity[0]
@@ -71,7 +76,8 @@ def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=
         logging.info(f"Worker {worker_id}: Starting episode {episode + 1}/{num_episodes}.")
         print(f"Worker {worker_id}: Starting episode {episode + 1}/{num_episodes}.")
         state = env.reset()[0]
-        if worldmodel is None:
+        #if worldmodel is None:
+        if controller_path is None:
             state = preprocess_state(state, img_size=img_size, gray_scale=gray_scale)
         print(f'Worker {worker_id}: 1st state shape: {state.shape}, data type: {state.dtype}')
         done = False
@@ -79,14 +85,16 @@ def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=
         step_count = 0
 
         # Initialize the controller initial hidden state and action if provided
-        if worldmodel is not None:
+        if controller_path is not None:
+        #if worldmodel is not None:
             print(f'Worker {worker_id}: initializing controller')
-            hidden = (torch.zeros((1, 1, worldmodel['rnn'].n_hidden)), 
-                      torch.zeros((1, 1, worldmodel['rnn'].n_hidden)))
+            hidden = (torch.zeros((1, 1, rnn.n_hidden)), 
+                      torch.zeros((1, 1, rnn.n_hidden)))
             print(f'Worker {worker_id}: initializing action')
             action = torch.zeros((1, 3))
             print(f'Worker {worker_id}: loading controller')
-            controller = PPO.load(worldmodel['controller_path'], device='cpu', verbose=1)  
+            #controller = PPO.load(worldmodel['controller_path'], device='cpu', verbose=1)  
+            controller = PPO.load(controller_path, device='cpu', verbose=1)
             print(f'Worker {worker_id}: controller loaded')
 
         start_time = time.time()
@@ -94,19 +102,24 @@ def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=
             #logging.info(f"Worker {worker_id}: Starting step {step_count + 1}/{max_steps}.")
             # print every 100 steps with the episode number and step count and average time per step
             if step_count % 100 == 0:
-                print(f"Worker {worker_id}: Starting step {step_count + 1}/{max_steps}, episode {episode + 1}/{num_episodes}, average time per step: {step_count / (time.time() - start_time)} steps per second.")
+                time_diff = time.time() - start_time
+                avg_time_per_step = step_count / time_diff if time_diff != 0 else 0
+                print(f"Worker {worker_id}: Starting step {step_count + 1}/{max_steps}, episode {episode + 1}/{num_episodes}, average time per step: {avg_time_per_step} steps per second.")
+
             #print(f"Worker {worker_id}: Starting step {step_count + 1}/{max_steps}.")
             # Sample a random action from the environment's action space if no controller is provided
-            if worldmodel is None:
+            if controller_path is None:
+            #if worldmodel is None:
                 action = env.action_space.sample()
             else:
-                obs = process_obs(state, action, worldmodel['vae'], worldmodel['rnn'], hidden)
+                obs = process_obs(state, action, vae, rnn, hidden)
                 action, _ = controller.predict(obs)
 
             next_state, reward, done, truncated, info = env.step(action)
             episode_data.append((state, action, reward, done, episode, step_count)) #Step count and episode number to help with debugging
             # episode_data.append((state, action, reward, next_state, done, truncated, info))
-            if worldmodel is None:
+            if controller_path is None:
+            #if worldmodel is None:
                 state = preprocess_state(next_state, img_size=img_size, gray_scale=gray_scale) 
             else:
                 state = next_state
@@ -136,9 +149,14 @@ if __name__ == "__main__":
     parser.add_argument("--controller_path", default="", type=str, help="Path to the trained controller model")
     args = parser.parse_args()
 
-
-    worldmodel = None
+    #worldmodel = None
+    shared_models = None
+    controller_path = None
     if args.use_controller:
+        # Initialize manager and shared dictionary
+        manager = Manager()
+        shared_models = manager.dict()
+
         latent_dim = 32
         action_dim = 3
         from cnnvae import VAE
@@ -167,16 +185,20 @@ if __name__ == "__main__":
         
         controller_path = args.controller_path
         
-        worldmodel = {'vae': vae, 'rnn': rnn, 'controller_path': controller_path}
-    
-    #set multiprocessing start method to spawn
-    set_start_method('spawn')
+        #worldmodel = {'vae': vae, 'rnn': rnn, 'controller_path': controller_path}
+        shared_models['vae'] = vae
+        shared_models['rnn'] = rnn
+
+    #set multiprocessing start method to spawn if this is a unix system
+    if sys.platform != 'win32':
+        set_start_method('spawn')
 
     logging.info(f"Starting data collection for {args.episodes * args.workers} episodes.")
     with Pool(args.workers) as p:
         results = p.starmap(
             collect_data, 
-            [(args.env, args.episodes, args.max_steps, args.seed, args.img_size, args.gray_scale, worldmodel) for _ in range(args.workers)]
+            #[(args.env, args.episodes, args.max_steps, args.seed, args.img_size, args.gray_scale, worldmodel) for _ in range(args.workers)]
+            [(args.env, args.episodes, args.max_steps, args.seed, args.img_size, args.gray_scale, controller_path, shared_models) for _ in range(args.workers)]
         )
 
     collected_data = [item for sublist in results for item in sublist]
