@@ -5,7 +5,6 @@ from multiprocessing import Pool, current_process, set_start_method, Manager, ge
 import logging
 from PIL import Image
 import torch
-from stable_baselines3 import PPO
 import time
 import sys
 
@@ -72,6 +71,9 @@ def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=
             env.seed(seed + current_process()._identity[0])
     data = []
     
+    if controller_path is not None:
+        from stable_baselines3 import PPO
+
     for episode in range(num_episodes):
         logging.info(f"Worker {worker_id}: Starting episode {episode + 1}/{num_episodes}.")
         print(f"Worker {worker_id}: Starting episode {episode + 1}/{num_episodes}.")
