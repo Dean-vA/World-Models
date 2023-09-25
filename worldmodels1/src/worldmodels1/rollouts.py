@@ -181,7 +181,7 @@ if __name__ == "__main__":
         new_state_dict = {k.replace("module.", ""): v for k, v in state_dict.items()}
         # Load the modified state_dict into the model
         vae.load_state_dict(new_state_dict)
-        vae.eval()
+        vae.to(args.device).eval()
         
         rnn = MemoryModel(n_input=latent_dim+action_dim, n_hidden=256, n_gaussians=5, latent_dim=latent_dim)        
         # Load the state_dict into CPU memory
@@ -190,7 +190,7 @@ if __name__ == "__main__":
         new_state_dict = {k.replace("module.", ""): v for k, v in state_dict.items()}
         # Load the modified state_dict into the model
         rnn.load_state_dict(new_state_dict)
-        rnn.eval()
+        rnn.to(args.device).eval()
         
         controller_path = args.controller_path
         
