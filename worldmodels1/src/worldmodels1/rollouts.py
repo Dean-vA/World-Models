@@ -118,13 +118,17 @@ def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=
                 action, _ = controller.predict(obs)
 
             next_state, reward, done, truncated, info = env.step(action)
-            episode_data.append((state, action, reward, done, episode, step_count)) #Step count and episode number to help with debugging
+            if controller_path is None:
+                episode_data.append((state, action, reward, done, episode, step_count)) #Step count and episode number to help with debugging
+            else:
+                proc_state = preprocess_state(state, img_size=img_size, gray_scale=gray_scale)
+                episode_data.append((proc_state, action, reward, done, episode, step_count)) #Step count and episode number to help with debugging
             # episode_data.append((state, action, reward, next_state, done, truncated, info))
             if controller_path is None:
             #if worldmodel is None:
                 state = preprocess_state(next_state, img_size=img_size, gray_scale=gray_scale) 
             else:
-                state = next_state
+                state = next_state # TODO: preprocess state
             step_count += 1
             
         data.append(episode_data)
