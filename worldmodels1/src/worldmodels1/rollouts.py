@@ -19,6 +19,7 @@ def preprocess_state(state, img_size=64, gray_scale=False):
     state = np.array(img).astype('uint8')
     
     return state
+    
 
 # a function to process the observation for the provided controller if any
 def process_obs(obs, action, vae, rnn, hidden, device='cpu'):
@@ -120,10 +121,12 @@ def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=
             next_state, reward, done, truncated, info = env.step(action)
             if controller_path is None:
                 episode_data.append((state, action, reward, done, episode, step_count)) #Step count and episode number to help with debugging
+                # episode_data.append((state, action, reward, next_state, done, truncated, info))
             else:
-                proc_state = preprocess_state(state, img_size=img_size, gray_scale=gray_scale)
+                # resize to 64x64 and convert to grayscale using torch
+                proc_state = torch.nn.functional.interpolate(torch.from_numpy(state).permute(2, 0, 1).float(), size=(64, 64), mode='bilinear', align_corners=False).mean(dim=0, keepdim=False)
                 episode_data.append((proc_state, action, reward, done, episode, step_count)) #Step count and episode number to help with debugging
-            # episode_data.append((state, action, reward, next_state, done, truncated, info))
+            
             if controller_path is None:
             #if worldmodel is None:
                 state = preprocess_state(next_state, img_size=img_size, gray_scale=gray_scale) 
