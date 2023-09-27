@@ -122,7 +122,7 @@ def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=
             next_state, reward, done, truncated, info = env.step(action)
             if controller_path is None:
                 episode_data.append((state, action, reward, done, episode, step_count)) #Step count and episode number to help with debugging
-                print(f'Worker {worker_id}: 1st state shape: {state.shape}, data type: {state.dtype}')
+                #print(f'Worker {worker_id}: 1st state shape: {state.shape}, data type: {state.dtype}')
                 # episode_data.append((state, action, reward, next_state, done, truncated, info))
             else:
                 # resize to 64x64 and convert to grayscale using torch
