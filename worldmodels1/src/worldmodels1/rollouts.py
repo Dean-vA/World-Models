@@ -124,14 +124,14 @@ def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=
                 # episode_data.append((state, action, reward, next_state, done, truncated, info))
             else:
                 # resize to 64x64 and convert to grayscale using torch
-                proc_state = torch.nn.functional.interpolate(torch.from_numpy(state).permute(2, 0, 1).float().unsqueeze(0), size=(64, 64), mode='bilinear', align_corners=False).mean(dim=1, keepdim=True).squeeze(0).squeeze(0)
+                proc_state = torch.nn.functional.interpolate(torch.from_numpy(state).permute(2, 0, 1).float().unsqueeze(0), size=(64, 64), mode='bilinear', align_corners=False).mean(dim=1, keepdim=True).squeeze(0).squeeze(0).to('cpu').numpy()
                 episode_data.append((proc_state, action, reward, done, episode, step_count)) #Step count and episode number to help with debugging
             
             if controller_path is None:
             #if worldmodel is None:
                 state = preprocess_state(next_state, img_size=img_size, gray_scale=gray_scale) 
             else:
-                state = next_state # TODO: preprocess state
+                state = next_state 
             step_count += 1
             
         data.append(episode_data)
