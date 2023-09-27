@@ -135,7 +135,9 @@ def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=
 
             #restart the environment if done to make sure we get the the same number of steps for each episode
             if done:
-                state = env.reset()[0]   
+                print(f"Worker {worker_id}: Episode {episode + 1}/{num_episodes} finished early restarting environment to get {max_steps} steps.")
+                state = env.reset()[0] 
+                done = False  
 
             step_count += 1
             
