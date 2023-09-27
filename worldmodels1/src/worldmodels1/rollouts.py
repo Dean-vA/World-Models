@@ -132,6 +132,11 @@ def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=
                 state = preprocess_state(next_state, img_size=img_size, gray_scale=gray_scale) 
             else:
                 state = next_state 
+
+            #restart the environment if done to make sure we get the the same number of steps for each episode
+            if done:
+                state = env.reset()[0]   
+
             step_count += 1
             
         data.append(episode_data)
