@@ -58,8 +58,9 @@ def process_obs(obs, action, vae, rnn, hidden, device='cpu'):
 
 
 def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=64, gray_scale=False, device='cpu', controller_path=None, shared_models=None):#worldmodel=None):
-    vae = shared_models.get('vae')
-    rnn = shared_models.get('rnn')
+    if shared_models is not None:
+        vae = shared_models.get('vae')
+        rnn = shared_models.get('rnn')
     #vae = worldmodel['vae']
     #rnn = worldmodel['rnn']
     # print device that is being used by torch
