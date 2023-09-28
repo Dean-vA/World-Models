@@ -65,6 +65,7 @@ if __name__ == '__main__':
 
             # Forward pass
             pi, mu, sigma, hidden = model(batch[0].to(device), hidden)  # [0] is the input sequence from the dataset #TO DO: check if this is correct should hidden be passed in during forward pass in training?
+            hidden = (hidden[0].detach(), hidden[1].detach())
             if i == 0:
                 logging.info(f'pi shape: {pi.shape}, mu shape: {mu.shape}, sigma shape: {sigma.shape}, y shape: {batch[1].shape}')
             
