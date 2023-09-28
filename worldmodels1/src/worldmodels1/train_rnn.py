@@ -53,7 +53,7 @@ if __name__ == '__main__':
     # Initialize empty list to hold loss values
     loss_values = []
     # initialize hidden state
-    hidden = (torch.zeros((1, 1, args.n_hidden)).to(device), torch.zeros((1, 1, args.n_hidden)).to(device))  #TO DO: check if this is correct should hidden be passed in during forward pass in training?
+    hidden = (torch.zeros((1, args.batch_size, args.n_hidden)).to(device), torch.zeros((1, args.batch_size, args.n_hidden)).to(device))  #TO DO: check if this is correct should hidden be passed in during forward pass in training?
     
     for epoch in tqdm(range(args.epochs), desc='Epochs'):  # Wrap the epoch loop with tqdm
         batch_tqdm = tqdm(dataloader, desc=f'Epoch {epoch + 1}', leave=False)  # Create a tqdm object for the dataloader loop
