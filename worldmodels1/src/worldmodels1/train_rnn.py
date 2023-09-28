@@ -52,6 +52,9 @@ if __name__ == '__main__':
     best_loss_epoch = np.inf
     # Initialize empty list to hold loss values
     loss_values = []
+    # initialize hidden state
+    hidden = (torch.zeros((1, 1, args.n_hidden)).to(device), torch.zeros((1, 1, args.n_hidden)).to(device))  #TO DO: check if this is correct should hidden be passed in during forward pass in training?
+    
     for epoch in tqdm(range(args.epochs), desc='Epochs'):  # Wrap the epoch loop with tqdm
         batch_tqdm = tqdm(dataloader, desc=f'Epoch {epoch + 1}', leave=False)  # Create a tqdm object for the dataloader loop
         starting_loss = None  # To hold the starting loss value for each epoch
@@ -61,7 +64,7 @@ if __name__ == '__main__':
             optimizer.zero_grad()
 
             # Forward pass
-            pi, mu, sigma = model(batch[0].to(device))  # [0] is the input sequence from the dataset
+            pi, mu, sigma, hidden = model(batch[0].to(device))  # [0] is the input sequence from the dataset #TO DO: check if this is correct should hidden be passed in during forward pass in training?
             if i == 0:
                 logging.info(f'pi shape: {pi.shape}, mu shape: {mu.shape}, sigma shape: {sigma.shape}, y shape: {batch[1].shape}')
             
