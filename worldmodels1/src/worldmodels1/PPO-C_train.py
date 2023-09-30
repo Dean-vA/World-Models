@@ -9,7 +9,7 @@ def make_env():
     wrapped_env = CarRacingWrapper(original_env)
     return wrapped_env
 
-envs = DummyVecEnv([make_env for _ in range(2)])  # Four parallel environments
+envs = DummyVecEnv([make_env for _ in range(64)])  # Four parallel environments
 
 model = PPO("MlpPolicy", envs, verbose=1)
 
