@@ -59,13 +59,13 @@ if __name__ == '__main__':
         for i, batch in enumerate(batch_tqdm):
             actual_batch_size = batch[0].size(0) 
             # initialize hidden state
-            hidden = (torch.zeros((1, actual_batch_size, args.n_hidden)).to(device), torch.zeros((1, actual_batch_size, args.n_hidden)).to(device))
+            #hidden = (torch.zeros((1, actual_batch_size, args.n_hidden)).to(device), torch.zeros((1, actual_batch_size, args.n_hidden)).to(device))
             # Zero the gradients
             optimizer.zero_grad()
 
             # Forward pass
-            pi, mu, sigma, hidden = model(batch[0].to(device), hidden)  # [0] is the input sequence from the dataset #TO DO: check if this is correct should hidden be passed in during forward pass in training?
-            hidden = (hidden[0].detach(), hidden[1].detach())
+            pi, mu, sigma, hidden = model(batch[0].to(device))#, hidden)  # [0] is the input sequence from the dataset #TO DO: check if this is correct should hidden be passed in during forward pass in training?
+            #hidden = (hidden[0].detach(), hidden[1].detach())
             if i == 0:
                 logging.info(f'pi shape: {pi.shape}, mu shape: {mu.shape}, sigma shape: {sigma.shape}, y shape: {batch[1].shape}')
             
