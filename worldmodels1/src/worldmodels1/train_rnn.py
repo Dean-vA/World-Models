@@ -51,15 +51,15 @@ if __name__ == '__main__':
 
     best_loss_epoch = np.inf
     # Initialize empty list to hold loss values
-    loss_values = []
-    # initialize hidden state
-    hidden = (torch.zeros((1, args.batch_size, args.n_hidden)).to(device), torch.zeros((1, args.batch_size, args.n_hidden)).to(device))  #TO DO: check if this is correct should hidden be passed in during forward pass in training?
-    
+    loss_values = []   
     for epoch in tqdm(range(args.epochs), desc='Epochs'):  # Wrap the epoch loop with tqdm
         batch_tqdm = tqdm(dataloader, desc=f'Epoch {epoch + 1}', leave=False)  # Create a tqdm object for the dataloader loop
         starting_loss = None  # To hold the starting loss value for each epoch
         best_loss = np.inf  # To hold the best loss value for each epoch
-        for i, batch in enumerate(batch_tqdm):  
+        for i, batch in enumerate(batch_tqdm):
+            actual_batch_size = batch[0].size(0) 
+            # initialize hidden state
+            hidden = (torch.zeros((1, actual_batch_size, args.n_hidden)).to(device), torch.zeros((1, actual_batch_size, args.n_hidden)).to(device))
             # Zero the gradients
             optimizer.zero_grad()
 
