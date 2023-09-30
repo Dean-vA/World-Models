@@ -1,6 +1,7 @@
 # Awrapper for the car racing gym environment that preprocesses the input and returns the latent state of the vision model and hidden state of the memory model
 import gymnasium as gym
 from gymnasium import spaces
+import os
 
 #add to path    
 import sys
@@ -19,6 +20,8 @@ class CarRacingWrapper(gym.Wrapper):
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(32+256,), dtype=np.float32)
 
         self.vae = VAE()
+        #print working directory
+        print(os.getcwd())
         # Load the state_dict into CPU memory
         state_dict = torch.load('./../vae.pth', map_location='cpu')
         # Remove 'module.' prefix from state_dict keys
