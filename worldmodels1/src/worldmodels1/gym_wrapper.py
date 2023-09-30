@@ -1,15 +1,16 @@
 # Awrapper for the car racing gym environment that preprocesses the input and returns the latent state of the vision model and hidden state of the memory model
 import gymnasium as gym
 from gymnasium import spaces
+
+#add to path    
+import sys
+sys.path.append('worldmodels1/src/worldmodels1')
+
 import numpy as np
 from .cnnvae import VAE
 from .mdnrnn import MemoryModel
 import torch
 from PIL import Image
-
-#add to path    
-import sys
-sys.path.append('worldmodels1/src/worldmodels1')
 
 class CarRacingWrapper(gym.Wrapper):
     def __init__(self, env, device='cpu'):
