@@ -7,8 +7,8 @@ import sys
 sys.path.append('worldmodels1/src/worldmodels1')
 
 import numpy as np
-from .cnnvae import VAE
-from .mdnrnn import MemoryModel
+from cnnvae import VAE
+from mdnrnn import MemoryModel
 import torch
 from PIL import Image
 
