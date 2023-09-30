@@ -23,7 +23,7 @@ class CarRacingWrapper(gym.Wrapper):
         #print working directory
         print(os.getcwd())
         # Load the state_dict into CPU memory
-        state_dict = torch.load('./../vae.pth', map_location='cpu')
+        state_dict = torch.load('./worldmodels1/vae.pth', map_location='cpu')
         # Remove 'module.' prefix from state_dict keys
         new_state_dict = {k.replace("module.", ""): v for k, v in state_dict.items()}
         # Load the modified state_dict into the model
@@ -32,7 +32,7 @@ class CarRacingWrapper(gym.Wrapper):
 
         self.rnn = MemoryModel(n_input=32+3, n_hidden=256, n_gaussians=5, latent_dim=32)
         # load pretrained weights
-        state_dict = torch.load('./../src/worldmodels1/memory_model.pth', map_location='cpu')
+        state_dict = torch.load('./worldmodels1/src/worldmodels1/memory_model.pth', map_location='cpu')
         # Remove 'module.' prefix from state_dict keys
         new_state_dict = {k.replace("module.", ""): v for k, v in state_dict.items()}
         self.rnn.load_state_dict(new_state_dict)
