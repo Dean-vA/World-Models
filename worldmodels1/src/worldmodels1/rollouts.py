@@ -192,7 +192,8 @@ if __name__ == "__main__":
         
         vae = VAE()
         # Load the state_dict into CPU memory
-        state_dict = torch.load('vae2.pth', map_location='cpu')
+        #state_dict = torch.load('vae2.pth', map_location='cpu')
+        state_dict = torch.load('vae.pth', map_location='cpu')
         # Remove 'module.' prefix from state_dict keys
         new_state_dict = {k.replace("module.", ""): v for k, v in state_dict.items()}
         # Load the modified state_dict into the model
