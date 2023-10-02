@@ -109,7 +109,7 @@ def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=
             if step_count % 100 == 0:
                 time_diff = time.time() - start_time
                 avg_time_per_step = step_count / time_diff if time_diff != 0 else 0
-                print(f"Worker {worker_id}: Starting step {step_count + 1}/{max_steps}, episode {episode + 1}/{num_episodes}, average time per step: {avg_time_per_step} steps per second, and reward: {cum_reward}")
+                print(f"Worker {worker_id}: Starting step {step_count + 1}/{max_steps}, episode {episode + 1}/{num_episodes}, average time per step: {avg_time_per_step} steps per second.")
 
             #print(f"Worker {worker_id}: Starting step {step_count + 1}/{max_steps}.")
             # Sample a random action from the environment's action space if no controller is provided
@@ -147,7 +147,7 @@ def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=
             
         data.append(episode_data)
         logging.info(f"Worker {worker_id}: Finished episode {episode + 1}/{num_episodes}.")
-        print(f"Worker {worker_id}: Finished episode {episode + 1}/{num_episodes} with {step_count} steps.")
+        print(f"Worker {worker_id}: Finished episode {episode + 1}/{num_episodes} with {step_count} steps, and reward: {cum_reward}")
 
     logging.info(f"Worker {worker_id}: Finished data collection.")
     print(f"Worker {worker_id}: Finished data collection.")
