@@ -102,13 +102,14 @@ def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=
             print(f'Worker {worker_id}: controller loaded')
 
         start_time = time.time()
+        cum_reward = 0
         while not done and step_count < max_steps:
             #logging.info(f"Worker {worker_id}: Starting step {step_count + 1}/{max_steps}.")
             # print every 100 steps with the episode number and step count and average time per step
             if step_count % 100 == 0:
                 time_diff = time.time() - start_time
                 avg_time_per_step = step_count / time_diff if time_diff != 0 else 0
-                print(f"Worker {worker_id}: Starting step {step_count + 1}/{max_steps}, episode {episode + 1}/{num_episodes}, average time per step: {avg_time_per_step} steps per second.")
+                print(f"Worker {worker_id}: Starting step {step_count + 1}/{max_steps}, episode {episode + 1}/{num_episodes}, average time per step: {avg_time_per_step} steps per second, and reward: {cum_reward}")
 
             #print(f"Worker {worker_id}: Starting step {step_count + 1}/{max_steps}.")
             # Sample a random action from the environment's action space if no controller is provided
@@ -120,6 +121,7 @@ def collect_data(env_name, num_episodes=10, max_steps=1000, seed=None, img_size=
                 action, _ = controller.predict(obs)
 
             next_state, reward, done, truncated, info = env.step(action)
+            cum_reward += reward
             if controller_path is None:
                 episode_data.append((state, action, reward, done, episode, step_count)) #Step count and episode number to help with debugging
                 #print(f'Worker {worker_id}: 1st state shape: {state.shape}, data type: {state.dtype}')
